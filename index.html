@@ -84,9 +84,9 @@
     border:1.5px dashed #cbd5e1;border-radius:14px;
     transition:all .2s var(--ease);font-size:12.5px;color:var(--text-2);
     box-shadow:var(--shadow-sm);
+    flex-wrap:wrap;
   }
   .upload-bar.drag{border-color:var(--accent);background:#ecfeff;box-shadow:0 0 0 4px rgba(6,182,212,.10), var(--shadow-sm)}
-  /* Variante da barra COLETADOS — tema roxo */
   .upload-bar.coletados-bar{
     border-color:#ddd6fe;
     background:linear-gradient(135deg,#faf5ff,#f5f3ff);
@@ -105,7 +105,7 @@
     background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2));
     box-shadow:0 4px 10px -3px rgba(124,58,237,.5);
   }
-  .upload-bar .u-text{flex:1;min-width:0;line-height:1.35}
+  .upload-bar .u-text{flex:1 1 300px;min-width:0;line-height:1.35}
   .upload-bar .u-text b{color:var(--primary-3)}
   .upload-bar.coletados-bar .u-text b{color:#5b21b6}
   .upload-bar .u-text small{display:block;color:var(--muted);font-size:10.5px;margin-top:1px;letter-spacing:.2px}
@@ -125,11 +125,31 @@
     background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2));
     box-shadow:0 4px 12px -3px rgba(124,58,237,.5);
   }
-  .btn-upload.coletados-btn:hover{
-    box-shadow:0 8px 18px -4px rgba(124,58,237,.6);
+  .btn-upload.coletados-btn:hover{box-shadow:0 8px 18px -4px rgba(124,58,237,.6)}
+
+  .btn-remove{
+    border:none;background:linear-gradient(135deg,#dc2626,#b91c1c);
+    color:#fff;padding:8px 14px;border-radius:9px;
+    font-family:inherit;font-size:12px;font-weight:700;
+    cursor:pointer;letter-spacing:.3px;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:all .18s var(--ease);
+    box-shadow:0 4px 12px -3px rgba(220,38,38,.45);
+    flex-shrink:0;
+  }
+  .btn-remove:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 18px -4px rgba(220,38,38,.55);
+    background:linear-gradient(135deg,#ef4444,#dc2626);
+  }
+  .btn-remove:active{transform:translateY(0)}
+  .btn-remove svg{
+    width:11px;height:11px;
+    stroke:currentColor;stroke-width:3;fill:none;
+    stroke-linecap:round;
   }
 
-  .status{font-size:12px;font-weight:600;min-height:16px;color:var(--primary);padding-left:4px}
+  .status{font-size:12px;font-weight:600;min-height:16px;color:var(--primary);padding-left:2px;flex:1 0 100%}
   .status.ok{color:var(--ok)}
   .status.err{color:var(--err)}
   .status.info{color:var(--primary)}
@@ -310,15 +330,12 @@
   }
   tbody tr:hover td.largura-cell{background:#a5f3fc}
 
-  /* LINHA VERDE (CORTE MARCADO) */
   tbody tr.row-corte td{
     background:var(--corte-bg) !important;
     color:var(--corte-text) !important;
     border-bottom-color:var(--corte-border) !important;
   }
-  tbody tr.row-corte:hover td{
-    background:var(--corte-bg-hover) !important;
-  }
+  tbody tr.row-corte:hover td{background:var(--corte-bg-hover) !important}
   tbody tr.row-corte td.idx{color:#047857 !important}
   tbody tr.row-corte td.desc{color:#065f46 !important}
   tbody tr.row-corte td.amarrados,
@@ -328,15 +345,10 @@
     color:#065f46 !important;
   }
   tbody tr.row-corte .flag-cb,
-  tbody tr.row-corte .corte-cb{
-    border-color:#10b981;
-  }
-  tbody tr.row-corte .rolos-input{
-    background:#ecfdf5;border-color:#6ee7b7;color:#065f46;
-  }
+  tbody tr.row-corte .corte-cb{border-color:#10b981}
+  tbody tr.row-corte .rolos-input{background:#ecfdf5;border-color:#6ee7b7;color:#065f46}
   tbody tr.row-corte .rolos-input:hover{background:#d1fae5}
 
-  /* FLAG COLUMN (IMPRESSO) */
   th.flag-cell{
     width:70px;text-align:center;
     background:linear-gradient(180deg,#0a4d8c 0%, #083a6b 100%);
@@ -362,7 +374,6 @@
   }
   .flag-cb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-  /* CORTE COLUMN */
   th.corte-cell{
     width:70px;text-align:center;
     background:linear-gradient(180deg,#047857 0%, #065f46 100%);
@@ -389,7 +400,6 @@
   }
   .corte-cb:focus-visible{outline:2px solid #10b981;outline-offset:2px}
 
-  /* COLETADO COLUMN */
   th.coletado-cell{
     width:110px;text-align:center;
     background:linear-gradient(180deg,#6d28d9 0%, #5b21b6 100%);
@@ -408,24 +418,17 @@
   }
   .coletado-badge.sim{
     background:linear-gradient(135deg,#dcfce7,#bbf7d0);
-    color:#166534;
-    border:1px solid #86efac;
+    color:#166534;border:1px solid #86efac;
     box-shadow:0 2px 6px -2px rgba(22,163,74,.35);
   }
   .coletado-badge.nao{
     background:linear-gradient(135deg,#fee2e2,#fecaca);
-    color:#991b1b;
-    border:1px solid #fca5a5;
+    color:#991b1b;border:1px solid #fca5a5;
     box-shadow:0 2px 6px -2px rgba(220,38,38,.35);
   }
-  tbody tr.row-corte td.coletado-cell{
-    background:var(--corte-bg) !important;
-  }
-  tbody tr.row-corte:hover td.coletado-cell{
-    background:var(--corte-bg-hover) !important;
-  }
+  tbody tr.row-corte td.coletado-cell{background:var(--corte-bg) !important}
+  tbody tr.row-corte:hover td.coletado-cell{background:var(--corte-bg-hover) !important}
 
-  /* COLUNA AÇÃO */
   th.act{
     width:60px;text-align:center;
     background:linear-gradient(180deg,#0b5ca8 0%, #0a4d8c 100%);
@@ -443,13 +446,9 @@
   .row-btn{
     position:relative;
     width:38px;height:38px;
-    border-radius:12px;
-    border:none;
+    border-radius:12px;border:none;
     background:linear-gradient(135deg, #0b5ca8 0%, #06b6d4 100%);
-    color:#fff;
-    cursor:pointer;
-    font-size:16px;
-    line-height:1;
+    color:#fff;cursor:pointer;font-size:16px;line-height:1;
     display:inline-flex;align-items:center;justify-content:center;
     transition:all .22s cubic-bezier(.34,1.56,.64,1);
     padding:0;
@@ -459,12 +458,9 @@
       inset 0 1px 0 rgba(255,255,255,.25);
   }
   .row-btn::before{
-    content:"";
-    position:absolute;inset:0;
-    border-radius:12px;
+    content:"";position:absolute;inset:0;border-radius:12px;
     background:linear-gradient(135deg, rgba(255,255,255,.35) 0%, transparent 55%);
-    opacity:0;transition:opacity .22s var(--ease);
-    pointer-events:none;
+    opacity:0;transition:opacity .22s var(--ease);pointer-events:none;
   }
   .row-btn:hover{
     transform:translateY(-3px) scale(1.08);
@@ -489,7 +485,6 @@
     transition:transform .22s var(--ease);
   }
   .row-btn:hover svg{transform:rotate(-8deg)}
-
   tbody tr.row-corte .row-btn{
     background:linear-gradient(135deg, #059669 0%, #10b981 100%);
     box-shadow:
@@ -587,16 +582,14 @@
   .etq-row3 span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .etq-row3.etq-row3-ft{
     grid-template-columns:1fr 1fr;
-    font-size:26px;
-    gap:8px;
+    font-size:26px;gap:8px;
   }
   .etq-row3.etq-row3-ft .etq-medida{
     display:flex;align-items:baseline;justify-content:center;gap:8px;
     white-space:nowrap;overflow:hidden;
   }
   .etq-row3.etq-row3-ft .etq-medida .etq-lbl{
-    font-size:15px;font-weight:900;letter-spacing:1.2px;
-    color:#475569;
+    font-size:15px;font-weight:900;letter-spacing:1.2px;color:#475569;
   }
   .etq-row3.etq-row3-ft .etq-medida .etq-vlr{
     font-size:30px;font-weight:900;color:var(--ink);
@@ -642,13 +635,7 @@
   }
   .rolos-input::placeholder{color:#cbd5e1;font-weight:500}
 
-  /* ============================================================
-     FILTROS FT
-     ============================================================ */
-  .ft-filter-stack{
-    display:flex;flex-direction:column;gap:6px;
-    align-items:flex-start;
-  }
+  .ft-filter-stack{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
   .ft-filter{
     display:inline-flex;align-items:center;gap:6px;
     padding:6px 10px 6px 12px;
@@ -657,26 +644,16 @@
     box-shadow:var(--shadow-sm);
     flex-wrap:wrap;
   }
-  .ft-filter.corte-group{
-    background:linear-gradient(135deg,#ecfdf5,#f0fdfa);
-    border-color:#a7f3d0;
-  }
-  .ft-filter.coletado-group{
-    background:linear-gradient(135deg,#faf5ff,#f5f3ff);
-    border-color:#ddd6fe;
-  }
+  .ft-filter.corte-group{background:linear-gradient(135deg,#ecfdf5,#f0fdfa);border-color:#a7f3d0}
+  .ft-filter.coletado-group{background:linear-gradient(135deg,#faf5ff,#f5f3ff);border-color:#ddd6fe}
   .ft-filter .ft-icon{
     display:inline-flex;align-items:center;justify-content:center;
     width:22px;height:22px;border-radius:7px;
     background:linear-gradient(135deg,var(--primary),var(--accent));
     color:#fff;font-size:11px;flex-shrink:0;
   }
-  .ft-filter.corte-group .ft-icon{
-    background:linear-gradient(135deg,#047857,#10b981);
-  }
-  .ft-filter.coletado-group .ft-icon{
-    background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2));
-  }
+  .ft-filter.corte-group .ft-icon{background:linear-gradient(135deg,#047857,#10b981)}
+  .ft-filter.coletado-group .ft-icon{background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2))}
   .ft-chip{
     border:1px solid #bae6fd;background:#fff;
     color:var(--primary-2);
@@ -751,8 +728,9 @@
     .main-tab{padding:9px 14px;font-size:11px}
     .modal-actions{padding:12px 14px}
     .edit-hint{font-size:10.5px;width:100%}
-    .upload-bar{flex-wrap:wrap}
+    .upload-bar{padding:10px}
     .upload-bar .u-text{font-size:11.5px}
+    .btn-upload,.btn-remove{padding:7px 12px;font-size:11px}
     .row-btn{width:32px;height:32px}
     .row-btn svg{width:15px;height:15px}
   }
@@ -796,7 +774,6 @@
 </header>
 
 <main>
-  <!-- ============ Upload base principal ============ -->
   <section class="upload-bar" id="dropzone">
     <span class="u-icon">📁</span>
     <div class="u-text">
@@ -804,18 +781,25 @@
       <small>Formatos aceitos: XLSX · XLS · XLSM · CSV</small>
     </div>
     <button class="btn-upload" id="btnPick">Carregar Excel</button>
+    <button class="btn-remove hidden" id="btnRemoveBase" type="button" title="Remover base principal">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Remover
+    </button>
     <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.csv" hidden>
     <div id="status" class="status"></div>
   </section>
 
-  <!-- ============ Upload base COLETADOS ============ -->
   <section class="upload-bar coletados-bar" id="dropzoneColetados">
     <span class="u-icon">✓</span>
     <div class="u-text">
-      <span id="uploadLabelColetados">Carregar base <b>COLETADOS</b> para cruzamento (por NÚMERO_DO_PEDIDO)</span>
-      <small>Se a base não for carregada, todos aparecerão como <b>NÃO</b> coletados</small>
+      <span id="uploadLabelColetados">Carregar base <b>COLETADOS</b> (cruzamento PV ↔ NÚMERO_DO_PEDIDO)</span>
+      <small>Será considerado <b>coletado</b> quando a <b>coluna U</b> estiver preenchida</small>
     </div>
     <button class="btn-upload coletados-btn" id="btnPickColetados">Carregar Coletados</button>
+    <button class="btn-remove hidden" id="btnRemoveColetados" type="button" title="Remover base COLETADOS">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Remover
+    </button>
     <input type="file" id="fileInputColetados" accept=".xlsx,.xls,.xlsm,.csv" hidden>
     <div id="statusColetados" class="status"></div>
   </section>
@@ -991,14 +975,17 @@ const COLUNAS_FT = [
   { label:'QTDE',        aliases:['QUANTIDADE_NECESSARIA_B','QUANTIDADE NECESSARIA B','QUANTIDADE_NECESSÁRIA_B','QTDE'] }
 ];
 
-/* Coluna do arquivo COLETADOS usada como chave de cruzamento */
+/* Aliases para a coluna chave do arquivo COLETADOS */
 const COLETADOS_KEY_ALIASES = [
   'NUMERO_DO_PEDIDO','NÚMERO_DO_PEDIDO',
   'NUMERO DO PEDIDO','NÚMERO DO PEDIDO',
   'NUMERODOPEDIDO','NUMEROPEDIDO',
   'NRO_PEDIDO','NR_PEDIDO','NROPEDIDO',
-  'PEDIDO'
+  'PEDIDO','N_PEDIDO','Nº_PEDIDO'
 ];
+
+/* Índice da coluna U (A=0 → U=20) */
+const COLETADOS_IDX_COLUNA_U = 20;
 
 const ETQ_EMPRESA = {
   nome: 'HIDROGOOD HORTICULTURA MODERNA',
@@ -1063,15 +1050,6 @@ const norm = v => String(v ?? '')
   .toUpperCase().replace(/\s+/g, ' ').trim();
 
 const loose = v => norm(v).replace(/[^A-Z0-9]/g, '');
-
-/* Chave para cruzamento: só dígitos, sem zeros à esquerda */
-const chaveNumero = v => {
-  const s = String(v ?? '').trim();
-  if (!s) return '';
-  const digits = s.replace(/\D/g, '');
-  if (!digits) return '';
-  return digits.replace(/^0+/, '') || digits;
-};
 
 const FILTRO_MAP_REC = new Map();
 FILTROS_RECOLHIMENTO.forEach(f => FILTRO_MAP_REC.set(loose(f), f));
@@ -1168,11 +1146,43 @@ function matchFT(descricao) {
 }
 
 /* =========================================================
+   CRUZAMENTO — CHAVES NUMÉRICAS
+   ========================================================= */
+function extrairChavesNumericas(valor) {
+  const s = String(valor ?? '').trim();
+  if (!s) return [];
+  const set = new Set();
+
+  const matches = s.match(/\d{3,}/g);
+  if (matches) {
+    matches.forEach(m => {
+      const limpo = m.replace(/^0+/, '') || m;
+      if (limpo) set.add(limpo);
+    });
+  }
+
+  const allDigits = s.replace(/\D/g, '');
+  if (allDigits && allDigits.length >= 3) {
+    const limpo = allDigits.replace(/^0+/, '') || allDigits;
+    if (limpo) set.add(limpo);
+  }
+
+  return [...set];
+}
+
+function celulaTemDados(v) {
+  if (v === '' || v == null) return false;
+  if (v instanceof Date) return true;
+  if (typeof v === 'number') return true;
+  const s = String(v).trim();
+  return s.length > 0;
+}
+
+/* =========================================================
    EXTRAÇÃO DE MEDIDAS
    ========================================================= */
 const RE_MEDIDAS = /(\d+(?:[.,]\d+)?)\s*X\s*(\d+(?:[.,]\d+)?)\s*(?:M\b|MTS\b|METROS\b)?/i;
 const RE_DE_M = /DE\s+(\d+(?:[.,]\d+)?)\s*(?:M\b|MTS\b|METROS\b)/i;
-const RE_ROLOS = /(\d+)\s*ROLOS?\b/i;
 
 function numeroDoTexto(txt) {
   if (txt == null) return NaN;
@@ -1220,18 +1230,49 @@ function extrairComprimento(descricao, observacao, qtdeNum, larguraNum) {
   return '';
 }
 
+/* =========================================================
+   QUANTIDADE DE ROLOS
+   ---------------------------------------------------------
+   Padrões reconhecidos:
+   1) "N ROLO(S)" em qualquer posição  → N
+   2) "N x PALAVRA" NO INÍCIO do texto → N (ex: "3 x FILMES...")
+      (o X precisa ser seguido por uma LETRA, para evitar
+      confundir com dimensões tipo "3 x 40 M")
+   ========================================================= */
 function extrairQtdeRolos(observacao, descricao) {
   const obs = String(observacao ?? '').trim();
   const desc = String(descricao ?? '').trim();
 
-  if (obs) {
-    const m = obs.match(RE_ROLOS);
-    if (m) { const n = parseInt(m[1], 10); if (isFinite(n) && n > 0) return String(n); }
+  /* --- 1) Padrão "N ROLO(S)" — obs depois desc --- */
+  const RE_ROLOS = /(\d+)\s*ROLOS?\b/i;
+  let m;
+
+  if (obs && (m = obs.match(RE_ROLOS))) {
+    const n = parseInt(m[1], 10);
+    if (isFinite(n) && n > 0) return String(n);
   }
-  if (desc) {
-    const m = desc.match(RE_ROLOS);
-    if (m) { const n = parseInt(m[1], 10); if (isFinite(n) && n > 0) return String(n); }
+  if (desc && (m = desc.match(RE_ROLOS))) {
+    const n = parseInt(m[1], 10);
+    if (isFinite(n) && n > 0) return String(n);
   }
+
+  /* --- 2) Padrão "N x LETRA" no início do texto ---
+     Ex.: "3 x FILMES DIFUSORES DE 10 x 18 M (120 micras)"
+     O \s* após x serve para "3x FILMES" e "3 x FILMES".
+     O [A-Za-zÀ-ÿ] é obrigatório para NÃO casar com "3 x 40 M". */
+  const RE_NX_LETRA = /^\s*(\d+)\s*[xX]\s*[A-Za-zÀ-ÿ]/;
+
+  if (desc && (m = desc.match(RE_NX_LETRA))) {
+    const n = parseInt(m[1], 10);
+    if (isFinite(n) && n > 0 && n < 1000) return String(n);
+  }
+  if (obs && (m = obs.match(RE_NX_LETRA))) {
+    const n = parseInt(m[1], 10);
+    if (isFinite(n) && n > 0 && n < 1000) return String(n);
+  }
+
+  /* --- Padrão "N x ROLO" já é capturado pelo RE_ROLOS acima --- */
+
   return '1';
 }
 
@@ -1244,6 +1285,223 @@ const ICON_ETIQUETA = `
 /* =========================================================
    3) ESTADO
    ========================================================= */
+/* =========================================================
+   2.5) SUPABASE — PERSISTÊNCIA DA APLICAÇÃO
+   ========================================================= */
+const SUPABASE_URL = 'https://hbchbgymexmlbkyyydqu.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_7p2JEkqrYIFG3dhuk_33yA_QMHxSiJt';
+const SUPABASE_HEADERS = {
+  'apikey': SUPABASE_PUBLISHABLE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY,
+  'Content-Type': 'application/json'
+};
+
+let supabaseOnline = true;
+let currentImportBatchId = null;
+let currentCollectedBatchId = null;
+
+async function supabaseRequest(path, options = {}) {
+  const response = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    ...options,
+    headers: { ...SUPABASE_HEADERS, ...(options.headers || {}) }
+  });
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error('Supabase HTTP ' + response.status + (body ? ': ' + body.slice(0, 300) : ''));
+  }
+  if (response.status === 204) return null;
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+function supabaseJson(value) {
+  return value === undefined ? null : value;
+}
+
+function parseDbNumber(value) {
+  if (value === '' || value == null) return null;
+  const n = Number(String(value).replace(',', '.').replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(n) ? n : null;
+}
+
+function itemDbKey(r, origem) {
+  return [origem, r['PV'] || '', r['CÓD'] || '', r['DESCRIÇÃO'] || '']
+    .map(v => String(v ?? '').trim()).join('|');
+}
+
+function itemDbPayload(r, origem) {
+  const isRec = origem === 'RECOLHIMENTO';
+  const payload = {
+    item_key: r.__dbKey || itemDbKey(r, origem),
+    origem,
+    op: String(r['PV'] || ''),
+    data_op: String(r['DATA DO PV'] || ''),
+    pedido: String(r['PV'] || ''),
+    cliente: limparNomeCliente(r['CLIENTE'] || ''),
+    comprimento: parseDbNumber(String(r['COMPRIMENTO'] || '').replace(/[A-Za-z]/g, '')),
+    largura: isRec ? null : String(r['LARGURA'] || ''),
+    qtde_barras: isRec ? parseDbNumber(r['QTDE']) : null,
+    qtde_amarrados: isRec ? parseDbNumber(r['QTDE AMARRADOS']) : null,
+    qtde_rolos: isRec ? null : parseDbNumber(r['QTDE ROLOS']),
+    observacao: String(r['OBSERVAÇÃO'] || ''),
+    diametro: String(r['DIÂMETRO'] || ''),
+    furacao: String(r['FURAÇÃO'] || ''),
+    codigo_item: String(r['CÓD'] || ''),
+    descricao_item: String(r['DESCRIÇÃO'] || ''),
+    qtde_total: parseDbNumber(r['QTDE']),
+    coletado: isColetado(r) ? 'SIM' : 'NÃO',
+    status_producao: 'ABERTO',
+    status_finalizado: false,
+    categoria: isRec ? 'RECOLHIMENTO' : (r.__categoria || ''),
+    /* Estados de trabalho não entram no upsert da importação: assim uma nova
+       planilha não apaga impresso, corte ou edições manuais já persistidos. */
+    ativo: true,
+    last_import_batch_id: currentImportBatchId
+  };
+  return payload;
+}
+
+async function criarLoteSupabase(sourceName, fileName, rowCount, metadata = {}) {
+  const rows = await supabaseRequest('production_import_batches', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify([{ source_name: sourceName, file_name: fileName || null, row_count: rowCount || 0, metadata }])
+  });
+  return rows?.[0]?.id || null;
+}
+
+async function salvarBasePrincipalSupabase(nomeArquivo) {
+  try {
+    const total = dadosRec.length + dadosFT.length;
+    currentImportBatchId = await criarLoteSupabase('BASE_PRINCIPAL', nomeArquivo, total, {
+      abas: workbook?.SheetNames || [],
+      origem_script: 'gestao-etiquetas'
+    });
+    const payload = [
+      ...dadosRec.map(r => { r.__dbKey = itemDbKey(r, 'RECOLHIMENTO'); return itemDbPayload(r, 'RECOLHIMENTO'); }),
+      ...dadosFT.map(r => { r.__dbKey = itemDbKey(r, 'FILME_TELA'); return itemDbPayload(r, 'FILME_TELA'); })
+    ];
+    for (let i = 0; i < payload.length; i += 500) {
+      await supabaseRequest('production_items?on_conflict=item_key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(payload.slice(i, i + 500))
+      });
+    }
+    await registrarEventoSupabase(null, 'IMPORTACAO_BASE_PRINCIPAL', null, null, {
+      batch_id: currentImportBatchId, arquivo: nomeArquivo || '', total
+    });
+    supabaseOnline = true;
+    setStatus((statusEl.textContent || '') + ' · salvo no Supabase', 'ok');
+  } catch (err) {
+    supabaseOnline = false;
+    console.error('[Supabase] Falha ao salvar base principal:', err);
+    setStatus((statusEl.textContent || '') + ' · Supabase indisponível', 'err');
+  }
+}
+
+async function salvarColetadosSupabase(fileName, keys) {
+  try {
+    currentCollectedBatchId = await criarLoteSupabase('COLETADOS', fileName, keys.size, {
+      chave: 'NÚMERO_DO_PEDIDO',
+      origem_script: 'gestao-etiquetas'
+    });
+    const rows = [...keys].map(k => ({
+      numero_pedido: k,
+      chave_normalizada: k,
+      import_batch_id: currentCollectedBatchId,
+      metadata: { arquivo: fileName || '' }
+    }));
+    for (let i = 0; i < rows.length; i += 500) {
+      await supabaseRequest('production_collected_orders', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify(rows.slice(i, i + 500))
+      });
+    }
+    await registrarEventoSupabase(null, 'IMPORTACAO_COLETADOS', null, null, {
+      batch_id: currentCollectedBatchId, arquivo: fileName || '', total: keys.size
+    });
+    supabaseOnline = true;
+    setStatusColetados((statusColetadosEl.textContent || '') + ' · salvo no Supabase', 'ok');
+  } catch (err) {
+    supabaseOnline = false;
+    console.error('[Supabase] Falha ao salvar COLETADOS:', err);
+    setStatusColetados((statusColetadosEl.textContent || '') + ' · Supabase indisponível', 'err');
+  }
+}
+
+async function registrarEventoSupabase(itemKey, eventType, fieldName, oldValue, newValue) {
+  try {
+    await supabaseRequest('production_events', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify([{
+        item_key: itemKey || null,
+        event_type: eventType,
+        field_name: fieldName || null,
+        old_value: supabaseJson(oldValue),
+        new_value: supabaseJson(newValue),
+        metadata: { origem: 'gestao-etiquetas' }
+      }])
+    });
+  } catch (err) {
+    console.error('[Supabase] Falha ao registrar evento:', err);
+  }
+}
+
+async function atualizarItemSupabase(r, patch, eventType, fieldName, oldValue, newValue) {
+  const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
+  const key = r.__dbKey || itemDbKey(r, origem);
+  r.__dbKey = key;
+  const dbPatch = { ...patch, updated_at: new Date().toISOString() };
+  try {
+    await supabaseRequest('production_items?item_key=eq.' + encodeURIComponent(key), {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify(dbPatch)
+    });
+    await registrarEventoSupabase(key, eventType, fieldName, oldValue, newValue);
+  } catch (err) {
+    console.error('[Supabase] Falha ao atualizar item:', err);
+  }
+}
+
+const CAMPO_ETIQUETA_DB = {
+  'CLIENTE': 'cliente',
+  'DESCRIÇÃO': 'descricao_item',
+  'OBSERVAÇÃO': 'observacao',
+  'PV': 'pedido',
+  'COMPRIMENTO': 'comprimento',
+  'FURAÇÃO': 'furacao',
+  'DIÂMETRO': 'diametro',
+  'LARGURA': 'largura'
+};
+
+async function persistirEdicaoEtiqueta(r, field, value, oldValue) {
+  const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
+  const key = r.__dbKey || itemDbKey(r, origem);
+  r.__dbKey = key;
+  r.__camposEditados = { ...(r.__camposEditados || {}), [field]: value };
+  const patch = { campos_editados: r.__camposEditados };
+  const dbField = CAMPO_ETIQUETA_DB[field];
+  if (dbField) patch[dbField] = dbField === 'comprimento' ? parseDbNumber(String(value).replace(/[A-Za-z]/g, '')) : value;
+  await atualizarItemSupabase(r, patch, 'ETIQUETA_EDITADA', field, oldValue, value);
+}
+
+async function inicializarSupabase() {
+  try {
+    await supabaseRequest('production_items?select=item_key&limit=1', { method: 'GET' });
+    supabaseOnline = true;
+    console.info('[Supabase] Conexão estabelecida.');
+  } catch (err) {
+    supabaseOnline = false;
+    console.warn('[Supabase] Não foi possível conectar agora:', err.message);
+  }
+}
+
+inicializarSupabase();
+
 let workbook = null;
 
 let dadosRec = [];
@@ -1256,10 +1514,10 @@ let currentCorteFilter = '';
 let editandoRowFT = null;
 
 /* COLETADOS */
-let coletadosSet = new Set();       // Set de chaves numéricas dos NÚMEROS_DO_PEDIDO coletados
+let coletadosSet = new Set();
 let coletadosNomeArquivo = '';
-let currentColetadoFilterRec = 'NAO';   // Default NÃO
-let currentColetadoFilterFT  = 'NAO';   // Default NÃO
+let currentColetadoFilterRec = 'NAO';
+let currentColetadoFilterFT  = 'NAO';
 
 /* =========================================================
    4) REFS
@@ -1297,7 +1555,7 @@ function setStatusColetados(msg, tipo = 'purple') {
 }
 
 /* =========================================================
-   5) LEITURA DO ARQUIVO PRINCIPAL
+   5) LEITURA — BASE PRINCIPAL
    ========================================================= */
 $('btnPick').addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => {
@@ -1333,7 +1591,9 @@ function lerArquivo(file) {
         .map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
       $('sheetWrap').classList.toggle('hidden', workbook.SheetNames.length < 2);
 
-      processarPlanilha(workbook.SheetNames[0]);
+      $('btnRemoveBase').classList.remove('hidden');
+
+      processarPlanilha(workbook.SheetNames[0], file.name);
     } catch (err) {
       console.error(err);
       setStatus('❌ Arquivo inválido ou corrompido.', 'err');
@@ -1342,10 +1602,13 @@ function lerArquivo(file) {
   reader.readAsArrayBuffer(file);
 }
 
-$('sheetSelect').addEventListener('change', e => processarPlanilha(e.target.value));
+$('sheetSelect').addEventListener('change', e => {
+  const nomeArq = fileInput.files[0]?.name || '';
+  processarPlanilha(e.target.value, nomeArq);
+});
 
 /* =========================================================
-   6) LEITURA DO ARQUIVO COLETADOS
+   6) LEITURA — BASE COLETADOS
    ========================================================= */
 $('btnPickColetados').addEventListener('click', () => fileInputColetados.click());
 fileInputColetados.addEventListener('change', e => {
@@ -1363,7 +1626,7 @@ dropzoneColetados.addEventListener('drop', e => {
 });
 
 function lerArquivoColetados(file) {
-  setStatusColetados('⏳ Lendo "' + file.name + '"...', 'info');
+  setStatusColetados('⏳ Lendo "' + file.name + '"...', 'purple');
   const reader = new FileReader();
   reader.onerror = () => setStatusColetados('❌ Erro ao ler o arquivo.', 'err');
   reader.onload = ev => {
@@ -1386,7 +1649,6 @@ function lerArquivoColetados(file) {
         return;
       }
 
-      /* Localizar cabeçalho pelo NÚMERO_DO_PEDIDO */
       let linhaCab = -1, idxKey = -1;
       const limite = Math.min(aoa.length, 30);
 
@@ -1397,11 +1659,7 @@ function lerArquivoColetados(file) {
           const pos = linha.indexOf(loose(a));
           if (pos !== -1) { k = pos; break; }
         }
-        if (k !== -1) {
-          linhaCab = i;
-          idxKey = k;
-          break;
-        }
+        if (k !== -1) { linhaCab = i; idxKey = k; break; }
       }
 
       if (linhaCab === -1 || idxKey === -1) {
@@ -1409,32 +1667,61 @@ function lerArquivoColetados(file) {
         return;
       }
 
-      /* Montar Set de chaves — cada linha com NÚMERO_DO_PEDIDO preenchido é um coletado */
       const novoSet = new Set();
-      let totalLidos = 0;
+      let totalColetados = 0;
+      let totalLinhasComPedido = 0;
+      let totalColunaUVazia = 0;
 
       for (let i = linhaCab + 1; i < aoa.length; i++) {
         const row = aoa[i] || [];
         const valor = row[idxKey];
-        const k = chaveNumero(valor);
-        if (k) {
-          novoSet.add(k);
-          totalLidos++;
+        if (!celulaTemDados(valor)) continue;
+        totalLinhasComPedido++;
+
+        const valorColunaU = row.length > COLETADOS_IDX_COLUNA_U
+          ? row[COLETADOS_IDX_COLUNA_U]
+          : '';
+
+        if (!celulaTemDados(valorColunaU)) {
+          totalColunaUVazia++;
+          continue;
+        }
+
+        const chaves = extrairChavesNumericas(valor);
+        if (chaves.length) {
+          chaves.forEach(k => novoSet.add(k));
+          totalColetados++;
         }
       }
 
       if (!novoSet.size) {
-        setStatusColetados('⚠️ Nenhum NÚMERO_DO_PEDIDO válido encontrado.', 'err');
+        setStatusColetados(
+          `⚠️ Nenhum pedido coletado válido. ${totalLinhasComPedido} linhas com NÚMERO_DO_PEDIDO, ` +
+          `mas coluna U vazia em todas (ou inválida).`,
+          'err'
+        );
+        coletadosSet = new Set();
+        coletadosNomeArquivo = file.name;
+        $('btnRemoveColetados').classList.remove('hidden');
+        renderRec();
+        renderFT();
         return;
       }
 
       coletadosSet = novoSet;
       coletadosNomeArquivo = file.name;
-      setStatusColetados(`✅ ${totalLidos} coletado(s) carregado(s) de "${file.name}".`, 'ok');
 
-      /* Reprocessa para atualizar coluna Coletado? nas duas abas */
+      $('btnRemoveColetados').classList.remove('hidden');
+
+      setStatusColetados(
+        `✅ ${totalColetados} pedido(s) coletado(s) de "${file.name}" · ` +
+        `${novoSet.size} chave(s) única(s)${totalColunaUVazia > 0 ? ` · ${totalColunaUVazia} ignorado(s) (coluna U vazia)` : ''}.`,
+        'ok'
+      );
+
       renderRec();
       renderFT();
+      salvarColetadosSupabase(file.name, novoSet);
     } catch (err) {
       console.error(err);
       setStatusColetados('❌ Arquivo inválido ou corrompido.', 'err');
@@ -1443,18 +1730,19 @@ function lerArquivoColetados(file) {
   reader.readAsArrayBuffer(file);
 }
 
-/* Verifica se uma linha (com PV) está coletada */
 function isColetado(r) {
   if (!coletadosSet.size) return false;
-  const k = chaveNumero(r['PV']);
-  if (!k) return false;
-  return coletadosSet.has(k);
+  const chaves = extrairChavesNumericas(r['PV']);
+  for (const k of chaves) {
+    if (coletadosSet.has(k)) return true;
+  }
+  return false;
 }
 
 /* =========================================================
    7) PROCESSAMENTO — BASE PRINCIPAL
    ========================================================= */
-function processarPlanilha(nomeAba) {
+function processarPlanilha(nomeAba, nomeArquivo) {
   const ws = workbook.Sheets[nomeAba];
   if (!ws) return;
 
@@ -1576,6 +1864,7 @@ function processarPlanilha(nomeAba) {
       const larguraNum = extrairLarguraNumero(obsBruta, descricaoBruta);
       obj['COMPRIMENTO'] = extrairComprimento(descricaoBruta, obsBruta, qtdeNumFT, larguraNum);
 
+      /* CORRIGIDO: agora detecta "3 x FILMES ..." também */
       obj['QTDE ROLOS'] = extrairQtdeRolos(obsBruta, descricaoBruta);
 
       obj.__categoria = matches[0];
@@ -1600,6 +1889,7 @@ function processarPlanilha(nomeAba) {
 
   let msgStatus = `✅ ${totalRec} recolhimento(s) · ${totalFT} filme/tela.`;
   if (totalExcluidos > 0) msgStatus += ` · ${totalExcluidos} excluído(s).`;
+  if (nomeArquivo) msgStatus += ` — ${nomeArquivo}`;
   setStatus(msgStatus, 'ok');
 
   if (totalRec) {
@@ -1625,6 +1915,7 @@ function processarPlanilha(nomeAba) {
   renderFT();
 
   setMainTab(totalRec ? 'recolhimento' : 'filmeTela');
+  salvarBasePrincipalSupabase(nomeArquivo);
 }
 
 /* =========================================================
@@ -1666,12 +1957,11 @@ tabsEl.addEventListener('click', e => {
   renderRec();
 });
 
-/* Aplica o filtro de coletado conforme regra (default NÃO) */
 function passaFiltroColetado(r, filtro) {
   const col = isColetado(r);
-  if (filtro === 'SIM')    return col;
-  if (filtro === 'NAO')    return !col;
-  return true; // TODOS
+  if (filtro === 'SIM') return col;
+  if (filtro === 'NAO') return !col;
+  return true;
 }
 
 /* =========================================================
@@ -1702,15 +1992,14 @@ function updateDateClearButton() {
   btnClearDates.classList.toggle('hidden', !tem);
 }
 
-/* Atualiza chips e contadores do filtro coletado (Recolhimento) */
 function atualizarColetadoChipsRec() {
   const todos = dadosRec.length;
   let sim = 0, nao = 0;
   dadosRec.forEach(r => { if (isColetado(r)) sim++; else nao++; });
 
-  $('cntColSimRec').textContent    = sim;
-  $('cntColNaoRec').textContent    = nao;
-  $('cntColTodosRec').textContent  = todos;
+  $('cntColSimRec').textContent   = sim;
+  $('cntColNaoRec').textContent   = nao;
+  $('cntColTodosRec').textContent = todos;
 
   document.querySelectorAll('#coletadoFilterRec .ft-chip').forEach(chip => {
     chip.classList.toggle('active', chip.dataset.coletado === currentColetadoFilterRec);
@@ -1738,10 +2027,7 @@ function renderRec() {
 
   const base = dadosRec.filter(r => {
     if (currentTabRec === 'inicio' ? r.__impresso : !r.__impresso) return false;
-
-    /* Filtro Coletado (default NÃO) */
     if (!passaFiltroColetado(r, currentColetadoFilterRec)) return false;
-
     if (temFiltroData) {
       const d = parseDateBR(r['DATA DO PV']);
       if (!d) return false;
@@ -1833,7 +2119,9 @@ tblRec.querySelector('tbody').addEventListener('change', e => {
   if (!cb) return;
   const r = dadosRec.find(x => x.__id === cb.dataset.id);
   if (!r) return;
+  const oldValue = r.__impresso;
   r.__impresso = cb.checked;
+  atualizarItemSupabase(r, { impresso: cb.checked }, 'IMPRESSO_ALTERADO', 'impresso', oldValue, cb.checked);
   renderRec();
 });
 
@@ -1862,7 +2150,6 @@ function montarCabecalhoFT() {
 }
 
 function atualizarFTChips() {
-  /* Material */
   const todos  = dadosFT.length;
   const filme  = dadosFT.filter(r => r.__categoria === 'FILME').length;
   const tela   = dadosFT.filter(r => r.__categoria === 'TELA').length;
@@ -1877,7 +2164,6 @@ function atualizarFTChips() {
     chip.classList.toggle('active', chip.dataset.ft === currentFTFilter);
   });
 
-  /* Corte */
   const pendentes = dadosFT.filter(r => !r.__corte).length;
   const cortados  = dadosFT.filter(r =>  r.__corte).length;
 
@@ -1889,7 +2175,6 @@ function atualizarFTChips() {
     chip.classList.toggle('active', chip.dataset.corte === currentCorteFilter);
   });
 
-  /* Coletado */
   let sim = 0, nao = 0;
   dadosFT.forEach(r => { if (isColetado(r)) sim++; else nao++; });
 
@@ -1943,12 +2228,9 @@ function renderFT() {
 
   const base = dadosFT.filter(r => {
     if (currentFTFilter && r.__categoria !== currentFTFilter) return false;
-
     if (currentCorteFilter === 'PENDENTE' && r.__corte) return false;
     if (currentCorteFilter === 'CORTADO'  && !r.__corte) return false;
-
     if (!passaFiltroColetado(r, currentColetadoFilterFT)) return false;
-
     if (temFiltroData) {
       const d = parseDateBR(r['DATA DO PV']);
       if (!d) return false;
@@ -2055,14 +2337,18 @@ tblFT.querySelector('tbody').addEventListener('change', e => {
   if (cb) {
     const r = dadosFT.find(x => x.__id === cb.dataset.id);
     if (!r) return;
+    const oldValue = r.__impresso;
     r.__impresso = cb.checked;
+    atualizarItemSupabase(r, { impresso: cb.checked }, 'IMPRESSO_ALTERADO', 'impresso', oldValue, cb.checked);
     return;
   }
   const ccb = e.target.closest('.corte-cb');
   if (ccb) {
     const r = dadosFT.find(x => x.__id === ccb.dataset.id);
     if (!r) return;
+    const oldValue = r.__corte;
     r.__corte = ccb.checked;
+    atualizarItemSupabase(r, { cortado: ccb.checked }, 'CORTE_ALTERADO', 'cortado', oldValue, ccb.checked);
     atualizarFTChips();
     renderFT();
   }
@@ -2076,6 +2362,17 @@ tblFT.querySelector('tbody').addEventListener('input', e => {
   r['QTDE ROLOS'] = inp.value;
 });
 
+tblFT.querySelector('tbody').addEventListener('change', e => {
+  const inp = e.target.closest('.rolos-input');
+  if (!inp) return;
+  const r = dadosFT.find(x => x.__id === inp.dataset.id);
+  if (!r) return;
+  const oldValue = r.__lastPersistedRolos ?? r['QTDE ROLOS'];
+  r['QTDE ROLOS'] = inp.value;
+  r.__lastPersistedRolos = inp.value;
+  atualizarItemSupabase(r, { qtde_rolos: parseDbNumber(inp.value) }, 'QTDE_ROLOS_ALTERADA', 'qtde_rolos', oldValue, inp.value);
+});
+
 tblFT.querySelector('tbody').addEventListener('click', e => {
   const btn = e.target.closest('.row-btn');
   if (!btn) return;
@@ -2083,7 +2380,53 @@ tblFT.querySelector('tbody').addEventListener('click', e => {
 });
 
 /* =========================================================
-   12) ETIQUETA — helpers comuns
+   12) REMOVER BASES
+   ========================================================= */
+$('btnRemoveBase').addEventListener('click', () => {
+  if (!workbook) return;
+
+  workbook = null;
+  dadosRec = [];
+  dadosFT = [];
+  fileInput.value = '';
+
+  cardRec.classList.add('hidden');
+  cardFT.classList.add('hidden');
+  $('sheetWrap').classList.add('hidden');
+  $('sheetSelect').innerHTML = '';
+  $('btnRemoveBase').classList.add('hidden');
+
+  currentTabRec = 'inicio';
+  atualizarSubTabsAtivas();
+
+  dataInicio.value = '';
+  dataFim.value = '';
+  dataInicioFT.value = '';
+  dataFimFT.value = '';
+  $('search').value = '';
+  $('searchFT').value = '';
+  currentFTFilter = '';
+  currentCorteFilter = '';
+
+  setStatus('🗑 Base principal removida. Aguardando novo carregamento.', 'info');
+});
+
+$('btnRemoveColetados').addEventListener('click', () => {
+  if (!coletadosSet.size && !coletadosNomeArquivo) return;
+
+  coletadosSet = new Set();
+  coletadosNomeArquivo = '';
+  fileInputColetados.value = '';
+  $('btnRemoveColetados').classList.add('hidden');
+
+  setStatusColetados('🗑 Base COLETADOS removida. Todos aparecerão como NÃO.', 'purple');
+
+  renderRec();
+  renderFT();
+});
+
+/* =========================================================
+   13) ETIQUETA — helpers comuns
    ========================================================= */
 function etqPV(v) {
   if (v === '' || v == null) return '—';
@@ -2152,7 +2495,11 @@ labelBox.addEventListener('focusout', e => {
   if (!field) return;
   let v = el.textContent.replace(/\u00a0/g, ' ').trim();
   if (v === '—') v = '';
-  if (v !== rowAtual[field]) rowAtual[field] = v;
+  const oldValue = rowAtual[field];
+  if (v !== oldValue) {
+    rowAtual[field] = v;
+    persistirEdicaoEtiqueta(rowAtual, field, v, oldValue);
+  }
 }, true);
 
 labelBox.addEventListener('keydown', e => {
@@ -2169,7 +2516,7 @@ labelBox.addEventListener('keydown', e => {
 });
 
 /* =========================================================
-   13) ETIQUETA — RECOLHIMENTO
+   14) ETIQUETA — RECOLHIMENTO
    ========================================================= */
 function etqComprimento(v) {
   if (v === '' || v == null) return '—';
@@ -2284,7 +2631,7 @@ function abrirEtiqueta(id) {
 }
 
 /* =========================================================
-   14) ETIQUETA — FILME / TELA
+   15) ETIQUETA — FILME / TELA
    ========================================================= */
 function calcTotalEtiquetasFT(r) {
   const rawRolos = String(r['QTDE ROLOS'] ?? '').trim();
@@ -2384,7 +2731,7 @@ function abrirEtiquetaFT(id) {
 }
 
 /* =========================================================
-   15) FECHAR MODAL
+   16) FECHAR MODAL
    ========================================================= */
 function fecharEtiqueta() {
   overlay.classList.add('hidden');
@@ -2414,7 +2761,7 @@ $('btnPrint').addEventListener('click', () => {
 });
 
 /* =========================================================
-   16) EXPORTAR
+   17) EXPORTAR
    ========================================================= */
 $('btnExport').addEventListener('click', () => {
   if (!dadosRec.length) return;
@@ -2455,6 +2802,7 @@ $('btnExport').addEventListener('click', () => {
   const sheetName = currentTabRec === 'inicio' ? 'Início' : 'Impressos';
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, `recolhimento_${currentTabRec}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  registrarEventoSupabase(null, 'EXPORTACAO_REALIZADA', null, null, { aba: 'RECOLHIMENTO', total: base.length });
 });
 
 $('btnExportFT').addEventListener('click', () => {
@@ -2502,6 +2850,7 @@ $('btnExportFT').addEventListener('click', () => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Filme-Tela');
   XLSX.writeFile(wb, `filme_tela_${new Date().toISOString().slice(0,10)}.xlsx`);
+  registrarEventoSupabase(null, 'EXPORTACAO_REALIZADA', null, null, { aba: 'FILME_TELA', total: base.length });
 });
 </script>
 </body>
