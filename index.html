@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- HIDROGOOD_SUPABASE_V4_RESTORE_STATE_2026-10-16 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1392,6 +1393,8 @@ async function salvarBasePrincipalSupabase(nomeArquivo) {
         body: JSON.stringify(payload.slice(i, i + 500))
       });
     }
+    await restaurarEstadosSupabase();
+    await carregarUltimosColetadosSupabase();
     await registrarEventoSupabase(null, 'IMPORTACAO_BASE_PRINCIPAL', null, null, {
       batch_id: currentImportBatchId, arquivo: nomeArquivo || '', total
     });
@@ -1471,6 +1474,68 @@ async function atualizarItemSupabase(r, patch, eventType, fieldName, oldValue, n
   }
 }
 
+async function restaurarEstadosSupabase() {
+  const rows = [...dadosRec, ...dadosFT];
+  const keys = rows.map(r => {
+    const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
+    r.__dbKey = r.__dbKey || itemDbKey(r, origem);
+    return r.__dbKey;
+  });
+  if (!keys.length) return;
+
+  try {
+    /* O endpoint REST pode interpretar de forma diferente filtros IN com
+       chaves longas e caracteres especiais. Buscamos os itens persistidos
+       e fazemos o cruzamento local pelo item_key. */
+    const encontrados = await supabaseRequest(
+      'production_items?select=item_key,impresso,cortado,qtde_rolos,campos_editados&limit=10000',
+      { method: 'GET' }
+    );
+    const porKey = new Map((encontrados || []).map(x => [x.item_key, x]));
+    rows.forEach(r => {
+      const salvo = porKey.get(r.__dbKey);
+      if (!salvo) return;
+      r.__impresso = !!salvo.impresso;
+      r.__corte = !!salvo.cortado;
+      if (salvo.qtde_rolos !== null && salvo.qtde_rolos !== undefined) {
+        r['QTDE ROLOS'] = String(salvo.qtde_rolos);
+      }
+      r.__camposEditados = salvo.campos_editados || {};
+    });
+
+    renderRec();
+    renderFT();
+    console.info('[Supabase] Estados restaurados:', encontrados.length);
+  } catch (err) {
+    console.error('[Supabase] Falha ao restaurar estados:', err);
+  }
+}
+
+async function carregarUltimosColetadosSupabase() {
+  try {
+    const lotes = await supabaseRequest(
+      'production_import_batches?source_name=eq.COLETADOS&select=id&order=imported_at.desc&limit=1',
+      { method: 'GET' }
+    );
+    const lote = lotes?.[0]?.id;
+    if (!lote) return;
+
+    const pedidos = await supabaseRequest(
+      'production_collected_orders?import_batch_id=eq.' + encodeURIComponent(lote) + '&select=chave_normalizada&limit=10000',
+      { method: 'GET' }
+    );
+    coletadosSet = new Set((pedidos || []).map(x => x.chave_normalizada).filter(Boolean));
+    currentCollectedBatchId = lote;
+    if (dadosRec.length || dadosFT.length) {
+      renderRec();
+      renderFT();
+    }
+    console.info('[Supabase] Pedidos coletados restaurados:', coletadosSet.size);
+  } catch (err) {
+    console.error('[Supabase] Falha ao restaurar COLETADOS:', err);
+  }
+}
+
 const CAMPO_ETIQUETA_DB = {
   'CLIENTE': 'cliente',
   'DESCRIÇÃO': 'descricao_item',
@@ -1498,6 +1563,7 @@ async function inicializarSupabase() {
     await supabaseRequest('production_items?select=item_key&limit=1', { method: 'GET' });
     supabaseOnline = true;
     console.info('[Supabase] Conexão estabelecida.');
+    await carregarUltimosColetadosSupabase();
   } catch (err) {
     supabaseOnline = false;
     console.warn('[Supabase] Não foi possível conectar agora:', err.message);
