@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestão de Etiquetas — Grupo Hidrogood</title>
+
+<link rel="icon" type="image/webp" href="https://ibrahort.org.br/wp-content/uploads/2025/02/logo-grupo-hidrogoodresultado.webp">
+<link rel="apple-touch-icon" href="https://ibrahort.org.br/wp-content/uploads/2025/02/logo-grupo-hidrogoodresultado.webp">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg-1:#eef4fb;--bg-2:#e3edf7;
+    --surface:#ffffff;--surface-2:#f7fafd;
+    --primary:#0b5ca8;--primary-2:#0a4d8c;--primary-3:#083a6b;
+    --accent:#06b6d4;--accent-2:#22d3ee;
+    --text:#0f172a;--text-2:#475569;--muted:#94a3b8;
+    --border:#e2e8f0;--border-soft:#eef2f7;
+    --ok:#059669;--err:#dc2626;--ink:#111827;
+    --corte-bg:#d1fae5;
+    --corte-bg-hover:#a7f3d0;
+    --corte-border:#6ee7b7;
+    --corte-text:#065f46;
+    --coletado-purple:#7c3aed;
+    --coletado-purple-2:#a855f7;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04), 0 2px 6px rgba(15,23,42,.04);
+    --shadow:0 4px 16px rgba(15,23,42,.07), 0 1px 3px rgba(15,23,42,.05);
+    --shadow-modal:0 30px 80px -20px rgba(15,23,42,.45);
+    --ease:cubic-bezier(.4,0,.2,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Inter','Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,system-ui,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #dbeafe 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #cffafe 0%, transparent 50%),
+      linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    background-attachment:fixed;
+    min-height:100vh;font-size:14px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  }
+
+  header{
+    background:rgba(255,255,255,.75);
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    border-bottom:1px solid rgba(226,232,240,.9);
+    padding:14px 28px;position:relative;
+  }
+  header::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+    background:linear-gradient(90deg,transparent 0%, var(--primary) 30%, var(--accent) 70%, transparent 100%);
+    opacity:.55;pointer-events:none;
+  }
+  .head-inner{display:flex;align-items:center;gap:20px;max-width:1560px;margin:0 auto}
+  .brand{
+    display:flex;align-items:center;gap:14px;padding:6px 14px 6px 8px;
+    border-radius:14px;background:#fff;border:1px solid var(--border);
+    box-shadow:var(--shadow-sm);
+    transition:transform .2s var(--ease), box-shadow .2s var(--ease);
+    text-decoration:none;flex-shrink:0;
+  }
+  .brand:hover{transform:translateY(-1px);box-shadow:0 6px 20px -6px rgba(11,92,168,.25)}
+  .brand-logo{height:38px;width:auto;max-width:170px;object-fit:contain;display:block}
+  .brand-divider{width:1px;height:34px;background:linear-gradient(180deg,transparent,var(--border),transparent);flex-shrink:0}
+  .head-text h1{
+    margin:0;font-size:19px;font-weight:800;
+    letter-spacing:.4px;color:var(--primary-3);
+    text-transform:uppercase;
+  }
+
+  main{max-width:1560px;margin:20px auto;padding:0 20px 80px;display:flex;flex-direction:column;gap:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:20px}
+  .hidden{display:none !important}
+
+  .upload-bar{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 14px;background:var(--surface);
+    border:1.5px dashed #cbd5e1;border-radius:14px;
+    transition:all .2s var(--ease);font-size:12.5px;color:var(--text-2);
+    box-shadow:var(--shadow-sm);
+  }
+  .upload-bar.drag{border-color:var(--accent);background:#ecfeff;box-shadow:0 0 0 4px rgba(6,182,212,.10), var(--shadow-sm)}
+  /* Variante da barra COLETADOS — tema roxo */
+  .upload-bar.coletados-bar{
+    border-color:#ddd6fe;
+    background:linear-gradient(135deg,#faf5ff,#f5f3ff);
+  }
+  .upload-bar.coletados-bar.drag{
+    border-color:var(--coletado-purple);
+    background:#f5f3ff;
+    box-shadow:0 0 0 4px rgba(124,58,237,.12), var(--shadow-sm);
+  }
+  .upload-bar .u-icon{
+    width:34px;height:34px;flex-shrink:0;display:grid;place-items:center;border-radius:10px;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    color:#fff;font-size:16px;box-shadow:0 4px 10px -3px rgba(11,92,168,.45);
+  }
+  .upload-bar.coletados-bar .u-icon{
+    background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2));
+    box-shadow:0 4px 10px -3px rgba(124,58,237,.5);
+  }
+  .upload-bar .u-text{flex:1;min-width:0;line-height:1.35}
+  .upload-bar .u-text b{color:var(--primary-3)}
+  .upload-bar.coletados-bar .u-text b{color:#5b21b6}
+  .upload-bar .u-text small{display:block;color:var(--muted);font-size:10.5px;margin-top:1px;letter-spacing:.2px}
+  .btn-upload{
+    border:none;background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    color:#fff;padding:8px 16px;border-radius:9px;
+    font-family:inherit;font-size:12px;font-weight:700;
+    cursor:pointer;letter-spacing:.3px;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:all .18s var(--ease);
+    box-shadow:0 4px 12px -3px rgba(11,92,168,.45);
+    flex-shrink:0;
+  }
+  .btn-upload:hover{transform:translateY(-1px);box-shadow:0 8px 18px -4px rgba(11,92,168,.55)}
+  .btn-upload:active{transform:translateY(0)}
+  .btn-upload.coletados-btn{
+    background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2));
+    box-shadow:0 4px 12px -3px rgba(124,58,237,.5);
+  }
+  .btn-upload.coletados-btn:hover{
+    box-shadow:0 8px 18px -4px rgba(124,58,237,.6);
+  }
+
+  .status{font-size:12px;font-weight:600;min-height:16px;color:var(--primary);padding-left:4px}
+  .status.ok{color:var(--ok)}
+  .status.err{color:var(--err)}
+  .status.info{color:var(--primary)}
+  .status.purple{color:var(--coletado-purple)}
+
+  .sheet-inline{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;font-size:12.5px;color:var(--text-2);
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;box-shadow:var(--shadow-sm);
+  }
+  .sheet-inline label{font-weight:700;color:var(--text-2)}
+  .sheet-inline select{
+    padding:7px 12px;border:1px solid var(--border);border-radius:9px;
+    font-size:12.5px;background:#fff;font-family:inherit;color:var(--text);
+    font-weight:600;cursor:pointer;outline:none;transition:.18s var(--ease);
+  }
+  .sheet-inline select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(6,182,212,.15)}
+
+  .main-tabs{
+    display:flex;gap:6px;padding:6px;
+    background:linear-gradient(135deg,#f1f5f9,#e2e8f0);
+    border-radius:14px;border:1px solid var(--border);
+    box-shadow:var(--shadow-sm);overflow-x:auto;
+  }
+  .main-tab{
+    border:none;background:transparent;
+    padding:11px 22px;font-size:12.5px;font-weight:800;letter-spacing:.6px;
+    color:var(--text-2);cursor:pointer;font-family:inherit;
+    text-transform:uppercase;
+    display:inline-flex;align-items:center;gap:9px;
+    border-radius:10px;white-space:nowrap;
+    transition:all .2s var(--ease);
+  }
+  .main-tab:hover{color:var(--primary);background:rgba(255,255,255,.6)}
+  .main-tab.active{
+    background:#fff;color:var(--primary);
+    box-shadow:0 4px 14px -4px rgba(11,92,168,.35), 0 1px 3px rgba(15,23,42,.06);
+  }
+  .main-tab .mt-icon{font-size:15px;line-height:1}
+
+  .tabs{
+    display:flex;gap:4px;margin-bottom:16px;
+    border-bottom:2px solid var(--border-soft);overflow-x:auto;
+  }
+  .tab{
+    border:none;background:transparent;
+    padding:12px 22px;font-size:12.5px;font-weight:800;
+    color:var(--muted);cursor:pointer;font-family:inherit;
+    letter-spacing:.7px;text-transform:uppercase;
+    position:relative;display:inline-flex;align-items:center;gap:9px;
+    transition:color .18s var(--ease), background .18s var(--ease);
+    border-radius:10px 10px 0 0;white-space:nowrap;
+  }
+  .tab:hover{color:var(--primary);background:rgba(11,92,168,.05)}
+  .tab.active{color:var(--primary)}
+  .tab.active::after{
+    content:"";position:absolute;left:8px;right:8px;bottom:-2px;height:3px;
+    background:linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius:3px;box-shadow:0 -1px 8px rgba(11,92,168,.35);
+  }
+  .tab-count{
+    background:#e2e8f0;color:var(--text-2);
+    padding:2px 10px;border-radius:20px;
+    font-size:11px;font-weight:800;
+    min-width:28px;text-align:center;letter-spacing:0;
+    transition:all .18s var(--ease);
+  }
+  .tab.active .tab-count{
+    background:linear-gradient(135deg, var(--primary), var(--accent));
+    color:#fff;box-shadow:0 4px 10px -3px rgba(11,92,168,.45);
+  }
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .toolbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .search-wrap{position:relative;flex:1;min-width:220px;max-width:340px}
+  .search-wrap::before{content:"🔎";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.55;pointer-events:none}
+  #search,#searchFT{
+    width:100%;padding:10px 14px 10px 34px;
+    border:1px solid var(--border);border-radius:11px;
+    font-size:13px;outline:none;transition:.2s var(--ease);
+    background:#fff;color:var(--text);font-family:inherit;font-weight:500;
+    box-shadow:var(--shadow-sm);
+  }
+  #search:focus,#searchFT:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(6,182,212,.13), var(--shadow-sm)}
+
+  .date-filter{
+    display:flex;align-items:center;gap:8px;
+    padding:6px 10px 6px 12px;
+    background:linear-gradient(135deg, #f0f9ff, #ecfeff);
+    border:1px solid #bae6fd;border-radius:12px;
+    font-size:12px;font-weight:600;color:var(--primary-3);
+    box-shadow:var(--shadow-sm);flex-wrap:wrap;
+  }
+  .date-filter .df-icon{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:22px;height:22px;border-radius:7px;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    color:#fff;font-size:11px;flex-shrink:0;
+  }
+  .date-filter label{letter-spacing:.3px;text-transform:uppercase;font-size:10.5px;font-weight:800;color:var(--primary-2)}
+  .date-filter input[type="date"]{
+    padding:6px 10px;border:1px solid #bae6fd;border-radius:8px;
+    font-size:12px;background:#fff;color:var(--text);
+    font-family:inherit;font-weight:600;outline:none;cursor:pointer;
+    transition:all .18s var(--ease);min-width:130px;
+  }
+  .date-filter input[type="date"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(6,182,212,.20)}
+  .date-filter .df-sep{font-size:10.5px;font-weight:800;color:var(--primary-2);letter-spacing:.5px;text-transform:uppercase}
+  .df-clear{
+    border:none;background:transparent;color:var(--primary-2);
+    width:22px;height:22px;border-radius:50%;cursor:pointer;
+    font-size:12px;font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:all .15s var(--ease);
+  }
+  .df-clear:hover{background:#fee2e2;color:var(--err)}
+
+  .badge{
+    background:linear-gradient(135deg,var(--primary) 0%, var(--primary-2) 100%);
+    color:#fff;padding:9px 16px;border-radius:30px;
+    font-size:12.5px;font-weight:700;white-space:nowrap;
+    box-shadow:0 4px 12px -4px rgba(11,92,168,.4);letter-spacing:.2px;
+  }
+
+  .btn{
+    border:1px solid var(--border);background:#fff;color:var(--text);
+    padding:10px 18px;border-radius:11px;font-size:13px;font-weight:600;
+    cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;
+    transition:all .18s var(--ease);box-shadow:var(--shadow-sm);white-space:nowrap;
+  }
+  .btn:hover{background:var(--surface-2);border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 4px 12px -4px rgba(15,23,42,.15)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{
+    background:linear-gradient(135deg,var(--primary) 0%, var(--primary-2) 100%);
+    border-color:transparent;color:#fff;
+    box-shadow:0 6px 16px -4px rgba(11,92,168,.45), 0 2px 4px rgba(11,92,168,.2);
+  }
+  .btn.primary:hover{background:linear-gradient(135deg,var(--primary-2) 0%, var(--primary-3) 100%)}
+  .btn.ghost{background:transparent;box-shadow:none}
+  .btn.ghost:hover{background:#fef2f2;border-color:#fecaca;color:var(--err)}
+
+  .table-wrap{max-height:66vh;overflow:auto;border:1px solid var(--border);border-radius:14px;background:#fff}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+  thead th{
+    position:sticky;top:0;z-index:2;
+    background:linear-gradient(180deg,#0b5ca8 0%, #0a4d8c 100%);
+    color:#fff;padding:13px 14px;text-align:left;white-space:nowrap;font-weight:700;
+    font-size:11px;letter-spacing:.7px;text-transform:uppercase;
+    border-bottom:2px solid #083a6b;
+  }
+  thead th:first-child{border-top-left-radius:13px}
+  thead th:last-child{border-top-right-radius:13px}
+  tbody td{
+    padding:10px 14px;border-bottom:1px solid var(--border-soft);
+    white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis;
+    vertical-align:middle;color:var(--text);
+    transition:background .15s var(--ease), color .15s var(--ease);
+  }
+  tbody tr:hover td{background:#f0f9ff}
+  tbody tr:hover td.act,tbody tr:hover td.flag-cell,tbody tr:hover td.corte-cell{background:#e0f2fe}
+  tbody tr:last-child td{border-bottom:none}
+  td.idx{color:var(--muted);font-size:11px;width:48px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  td.desc{white-space:normal;min-width:280px;max-width:420px;color:var(--primary-3);font-weight:700}
+  td.amarrados{
+    font-weight:800;color:var(--primary);text-align:center;
+    background:linear-gradient(135deg,#f0f9ff,#ecfeff);
+  }
+  tbody tr:hover td.amarrados{background:#dbeafe}
+  td.comprimento-cell{
+    font-weight:800;color:var(--primary);text-align:center;
+    background:linear-gradient(135deg,#f0f9ff,#ecfeff);
+  }
+  tbody tr:hover td.comprimento-cell{background:#dbeafe}
+  td.largura-cell{
+    font-weight:800;color:#0e7490;text-align:center;
+    background:linear-gradient(135deg,#ecfeff,#cffafe);
+  }
+  tbody tr:hover td.largura-cell{background:#a5f3fc}
+
+  /* LINHA VERDE (CORTE MARCADO) */
+  tbody tr.row-corte td{
+    background:var(--corte-bg) !important;
+    color:var(--corte-text) !important;
+    border-bottom-color:var(--corte-border) !important;
+  }
+  tbody tr.row-corte:hover td{
+    background:var(--corte-bg-hover) !important;
+  }
+  tbody tr.row-corte td.idx{color:#047857 !important}
+  tbody tr.row-corte td.desc{color:#065f46 !important}
+  tbody tr.row-corte td.amarrados,
+  tbody tr.row-corte td.comprimento-cell,
+  tbody tr.row-corte td.largura-cell{
+    background:linear-gradient(135deg,#a7f3d0,#6ee7b7) !important;
+    color:#065f46 !important;
+  }
+  tbody tr.row-corte .flag-cb,
+  tbody tr.row-corte .corte-cb{
+    border-color:#10b981;
+  }
+  tbody tr.row-corte .rolos-input{
+    background:#ecfdf5;border-color:#6ee7b7;color:#065f46;
+  }
+  tbody tr.row-corte .rolos-input:hover{background:#d1fae5}
+
+  /* FLAG COLUMN (IMPRESSO) */
+  th.flag-cell{
+    width:70px;text-align:center;
+    background:linear-gradient(180deg,#0a4d8c 0%, #083a6b 100%);
+  }
+  td.flag-cell{
+    width:70px;text-align:center;padding:6px 10px;
+    border-right:1px solid var(--border-soft);
+  }
+  .flag-cb{
+    appearance:none;-webkit-appearance:none;
+    width:24px;height:24px;border:2px solid #cbd5e1;border-radius:7px;
+    background:#fff;cursor:pointer;position:relative;
+    transition:all .18s var(--ease);vertical-align:middle;
+  }
+  .flag-cb:hover{border-color:var(--accent);transform:scale(1.08)}
+  .flag-cb:checked{
+    background:linear-gradient(135deg, var(--primary), var(--accent));
+    border-color:var(--primary);box-shadow:0 4px 10px -3px rgba(11,92,168,.5);
+  }
+  .flag-cb:checked::after{
+    content:"✓";position:absolute;inset:0;display:grid;place-items:center;
+    color:#fff;font-size:14px;font-weight:900;line-height:1;
+  }
+  .flag-cb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* CORTE COLUMN */
+  th.corte-cell{
+    width:70px;text-align:center;
+    background:linear-gradient(180deg,#047857 0%, #065f46 100%);
+  }
+  td.corte-cell{
+    width:70px;text-align:center;padding:6px 10px;
+    border-right:1px solid var(--border-soft);
+  }
+  .corte-cb{
+    appearance:none;-webkit-appearance:none;
+    width:24px;height:24px;border:2px solid #cbd5e1;border-radius:7px;
+    background:#fff;cursor:pointer;position:relative;
+    transition:all .18s var(--ease);vertical-align:middle;
+  }
+  .corte-cb:hover{border-color:#10b981;transform:scale(1.08)}
+  .corte-cb:checked{
+    background:linear-gradient(135deg,#10b981, #059669);
+    border-color:#059669;
+    box-shadow:0 4px 10px -3px rgba(16,185,129,.5);
+  }
+  .corte-cb:checked::after{
+    content:"✓";position:absolute;inset:0;display:grid;place-items:center;
+    color:#fff;font-size:14px;font-weight:900;line-height:1;
+  }
+  .corte-cb:focus-visible{outline:2px solid #10b981;outline-offset:2px}
+
+  /* COLETADO COLUMN */
+  th.coletado-cell{
+    width:110px;text-align:center;
+    background:linear-gradient(180deg,#6d28d9 0%, #5b21b6 100%);
+  }
+  td.coletado-cell{
+    width:110px;text-align:center;padding:6px 10px;
+    border-left:1px solid var(--border-soft);
+    border-right:1px solid var(--border-soft);
+  }
+  .coletado-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:4px 12px;border-radius:20px;
+    font-size:11px;font-weight:800;letter-spacing:.5px;
+    min-width:52px;
+    transition:all .18s var(--ease);
+  }
+  .coletado-badge.sim{
+    background:linear-gradient(135deg,#dcfce7,#bbf7d0);
+    color:#166534;
+    border:1px solid #86efac;
+    box-shadow:0 2px 6px -2px rgba(22,163,74,.35);
+  }
+  .coletado-badge.nao{
+    background:linear-gradient(135deg,#fee2e2,#fecaca);
+    color:#991b1b;
+    border:1px solid #fca5a5;
+    box-shadow:0 2px 6px -2px rgba(220,38,38,.35);
+  }
+  tbody tr.row-corte td.coletado-cell{
+    background:var(--corte-bg) !important;
+  }
+  tbody tr.row-corte:hover td.coletado-cell{
+    background:var(--corte-bg-hover) !important;
+  }
+
+  /* COLUNA AÇÃO */
+  th.act{
+    width:60px;text-align:center;
+    background:linear-gradient(180deg,#0b5ca8 0%, #0a4d8c 100%);
+    z-index:3;
+  }
+  td.act{
+    width:60px;text-align:center;padding:6px 8px;
+    position:sticky;right:0;z-index:1;background:#fff;
+  }
+  tbody tr:nth-child(even) td.act{background:#fafcfe}
+  tbody tr:hover td.act{background:#e0f2fe}
+  tbody tr.row-corte td.act{background:var(--corte-bg) !important}
+  tbody tr.row-corte:hover td.act{background:var(--corte-bg-hover) !important}
+
+  .row-btn{
+    position:relative;
+    width:38px;height:38px;
+    border-radius:12px;
+    border:none;
+    background:linear-gradient(135deg, #0b5ca8 0%, #06b6d4 100%);
+    color:#fff;
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:all .22s cubic-bezier(.34,1.56,.64,1);
+    padding:0;
+    box-shadow:
+      0 4px 10px -3px rgba(11,92,168,.45),
+      0 2px 4px rgba(11,92,168,.15),
+      inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .row-btn::before{
+    content:"";
+    position:absolute;inset:0;
+    border-radius:12px;
+    background:linear-gradient(135deg, rgba(255,255,255,.35) 0%, transparent 55%);
+    opacity:0;transition:opacity .22s var(--ease);
+    pointer-events:none;
+  }
+  .row-btn:hover{
+    transform:translateY(-3px) scale(1.08);
+    box-shadow:
+      0 10px 20px -4px rgba(6,182,212,.55),
+      0 4px 10px -3px rgba(11,92,168,.4),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    background:linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  }
+  .row-btn:hover::before{opacity:1}
+  .row-btn:active{
+    transform:translateY(-1px) scale(1.02);
+    box-shadow:
+      0 4px 10px -3px rgba(11,92,168,.5),
+      inset 0 2px 4px rgba(0,0,0,.15);
+  }
+  .row-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .row-btn svg{
+    width:18px;height:18px;
+    stroke:currentColor;stroke-width:2;fill:none;
+    stroke-linecap:round;stroke-linejoin:round;
+    transition:transform .22s var(--ease);
+  }
+  .row-btn:hover svg{transform:rotate(-8deg)}
+
+  tbody tr.row-corte .row-btn{
+    background:linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow:
+      0 4px 10px -3px rgba(16,185,129,.5),
+      0 2px 4px rgba(5,150,105,.15),
+      inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  tbody tr.row-corte .row-btn:hover{
+    background:linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    box-shadow:
+      0 10px 20px -4px rgba(16,185,129,.6),
+      0 4px 10px -3px rgba(5,150,105,.4),
+      inset 0 1px 0 rgba(255,255,255,.35);
+  }
+
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:14px;font-weight:500}
+  .empty .empty-icon{display:block;font-size:40px;margin-bottom:10px;opacity:.6}
+
+  .modal-overlay{
+    position:fixed;inset:0;z-index:1000;background:rgba(8,26,53,.55);
+    backdrop-filter:blur(6px) saturate(140%);-webkit-backdrop-filter:blur(6px) saturate(140%);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    animation:fadeIn .2s var(--ease);
+  }
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{
+    background:#fff;border-radius:20px;width:100%;max-width:860px;
+    max-height:94vh;overflow:auto;position:relative;box-shadow:var(--shadow-modal);
+    animation:slideUp .3s cubic-bezier(.2,.9,.3,1);
+  }
+  @keyframes slideUp{from{transform:translateY(20px) scale(.98);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .modal-close{
+    position:absolute;top:14px;right:14px;width:36px;height:36px;border:none;border-radius:50%;
+    background:rgba(255,255,255,.9);color:#334155;font-size:15px;font-weight:700;cursor:pointer;z-index:5;
+    display:flex;align-items:center;justify-content:center;transition:all .18s var(--ease);
+    box-shadow:0 2px 8px rgba(15,23,42,.2);
+  }
+  .modal-close:hover{background:#fff;transform:rotate(90deg);color:#0f172a}
+  .modal-actions{
+    padding:14px 22px;display:flex;gap:12px;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--border);background:var(--surface-2);
+    border-radius:0 0 20px 20px;flex-wrap:wrap;
+  }
+  .edit-hint{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:11.5px;font-weight:600;color:var(--text-2);letter-spacing:.2px;
+  }
+  .edit-hint::before{content:"✎";font-size:13px;color:var(--accent)}
+  .modal-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+
+  #labelContent{padding:22px}
+  .label-page{margin-bottom:22px;padding-bottom:22px;border-bottom:1px dashed var(--border)}
+  .label-page:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+  .label-actions{display:flex;justify-content:center;margin-top:14px}
+  .btn-download{
+    background:linear-gradient(135deg,var(--primary) 0%, var(--accent) 100%);
+    color:#fff;border:none;padding:9px 20px;border-radius:10px;
+    font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
+    display:inline-flex;align-items:center;gap:7px;
+    transition:all .18s var(--ease);
+    box-shadow:0 6px 16px -4px rgba(11,92,168,.45);letter-spacing:.3px;
+  }
+  .btn-download:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 24px -5px rgba(11,92,168,.6)}
+  .btn-download:disabled{opacity:.7;cursor:wait}
+
+  .etq{
+    width:100%;background:#fff;border:4px solid var(--ink);border-radius:12px;
+    overflow:hidden;font-family:'Arial Narrow','Arial',Helvetica,sans-serif;
+    color:var(--ink);line-height:1;
+  }
+  .etq-head{display:flex;align-items:center;gap:16px;padding:12px 18px;border-bottom:4px solid var(--ink)}
+  .etq-logo-box{
+    flex-shrink:0;width:110px;height:66px;border:3px solid var(--ink);border-radius:5px;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff;
+  }
+  .etq-logo-box img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .etq-company{flex:1;min-width:0}
+  .etq-company-name{font-size:23px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .etq-company-info{display:flex;justify-content:space-between;gap:16px;font-size:14px;font-weight:700;margin-top:8px;color:#1f2937}
+  .etq-client{
+    padding:14px 20px;border-bottom:4px solid var(--ink);
+    font-size:52px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;
+    line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .etq-desc{
+    padding:12px 20px;border-bottom:3px solid var(--ink);
+    font-size:34px;font-weight:900;letter-spacing:.3px;text-transform:uppercase;line-height:1.15;
+  }
+  .etq-row3{
+    display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:10px;
+    padding:13px 20px;border-bottom:3px solid var(--ink);
+    font-size:32px;font-weight:900;text-align:center;text-transform:uppercase;
+    line-height:1;letter-spacing:.3px;
+  }
+  .etq-row3 span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .etq-row3.etq-row3-ft{
+    grid-template-columns:1fr 1fr;
+    font-size:26px;
+    gap:8px;
+  }
+  .etq-row3.etq-row3-ft .etq-medida{
+    display:flex;align-items:baseline;justify-content:center;gap:8px;
+    white-space:nowrap;overflow:hidden;
+  }
+  .etq-row3.etq-row3-ft .etq-medida .etq-lbl{
+    font-size:15px;font-weight:900;letter-spacing:1.2px;
+    color:#475569;
+  }
+  .etq-row3.etq-row3-ft .etq-medida .etq-vlr{
+    font-size:30px;font-weight:900;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .etq-obs{
+    padding:16px 22px;border-bottom:3px solid var(--ink);
+    font-size:32px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;
+    line-height:1.3;min-height:46px;word-break:break-word;
+    display:flex;align-items:center;
+  }
+  .etq-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:14px 20px;font-size:32px;font-weight:900;letter-spacing:.3px;line-height:1;
+  }
+  .etq-foot .qty{display:flex;align-items:baseline;gap:10px;text-transform:uppercase;white-space:nowrap}
+  .etq-foot .qty .seq{display:inline-flex;align-items:baseline;gap:7px}
+  .etq-foot .qty .seq b{font-size:42px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
+  .etq-foot .qty .seq i{font-style:normal;font-size:20px;font-weight:800;letter-spacing:2px;color:#475569}
+  .etq-foot .pv{text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .etq [contenteditable="true"]{
+    outline:none;border-radius:5px;padding:1px 5px;margin:-1px -5px;
+    cursor:text;transition:background .15s var(--ease), box-shadow .15s var(--ease);
+    min-width:24px;min-height:1em;
+  }
+  .etq [contenteditable="true"]:hover{background:rgba(6,182,212,.10);box-shadow:inset 0 -3px 0 var(--accent)}
+  .etq [contenteditable="true"]:focus{background:rgba(6,182,212,.16);box-shadow:0 0 0 4px rgba(6,182,212,.25)}
+
+  td.rolos-cell{padding:6px 8px;text-align:center;width:130px}
+  .rolos-input{
+    width:100%;max-width:100px;
+    padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;
+    font-size:12.5px;font-weight:700;color:var(--primary);
+    text-align:center;font-family:inherit;
+    background:#f8fafc;outline:none;
+    transition:all .18s var(--ease);
+  }
+  .rolos-input:hover{border-color:#94a3b8;background:#fff}
+  .rolos-input:focus{
+    border-color:var(--accent);background:#fff;
+    box-shadow:0 0 0 3px rgba(6,182,212,.18);
+  }
+  .rolos-input::placeholder{color:#cbd5e1;font-weight:500}
+
+  /* ============================================================
+     FILTROS FT
+     ============================================================ */
+  .ft-filter-stack{
+    display:flex;flex-direction:column;gap:6px;
+    align-items:flex-start;
+  }
+  .ft-filter{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px 6px 12px;
+    background:linear-gradient(135deg,#f0f9ff,#ecfeff);
+    border:1px solid #bae6fd;border-radius:12px;
+    box-shadow:var(--shadow-sm);
+    flex-wrap:wrap;
+  }
+  .ft-filter.corte-group{
+    background:linear-gradient(135deg,#ecfdf5,#f0fdfa);
+    border-color:#a7f3d0;
+  }
+  .ft-filter.coletado-group{
+    background:linear-gradient(135deg,#faf5ff,#f5f3ff);
+    border-color:#ddd6fe;
+  }
+  .ft-filter .ft-icon{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:22px;height:22px;border-radius:7px;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    color:#fff;font-size:11px;flex-shrink:0;
+  }
+  .ft-filter.corte-group .ft-icon{
+    background:linear-gradient(135deg,#047857,#10b981);
+  }
+  .ft-filter.coletado-group .ft-icon{
+    background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2));
+  }
+  .ft-chip{
+    border:1px solid #bae6fd;background:#fff;
+    color:var(--primary-2);
+    padding:6px 12px;border-radius:9px;
+    font-size:11.5px;font-weight:800;font-family:inherit;
+    letter-spacing:.4px;text-transform:uppercase;
+    cursor:pointer;transition:all .18s var(--ease);
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .ft-chip:hover{background:#f0f9ff;transform:translateY(-1px)}
+  .ft-chip.active{
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    color:#fff;border-color:transparent;
+    box-shadow:0 4px 10px -3px rgba(11,92,168,.45);
+  }
+  .ft-chip .cnt{
+    background:rgba(11,92,168,.12);color:var(--primary-2);
+    padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:900;
+    min-width:20px;text-align:center;letter-spacing:0;
+  }
+  .ft-chip.active .cnt{background:rgba(255,255,255,.28);color:#fff}
+
+  .ft-chip.corte-chip{border-color:#a7f3d0;color:#047857}
+  .ft-chip.corte-chip:hover{background:#ecfdf5}
+  .ft-chip.corte-chip.active{
+    background:linear-gradient(135deg,#047857,#10b981);
+    color:#fff;border-color:transparent;
+    box-shadow:0 4px 10px -3px rgba(5,150,105,.45);
+  }
+  .ft-chip.corte-chip .cnt{background:rgba(5,150,105,.12);color:#065f46}
+  .ft-chip.corte-chip.active .cnt{background:rgba(255,255,255,.28);color:#fff}
+
+  .ft-chip.coletado-chip{border-color:#ddd6fe;color:#6d28d9}
+  .ft-chip.coletado-chip:hover{background:#f5f3ff}
+  .ft-chip.coletado-chip.active{
+    background:linear-gradient(135deg,var(--coletado-purple),var(--coletado-purple-2));
+    color:#fff;border-color:transparent;
+    box-shadow:0 4px 10px -3px rgba(124,58,237,.5);
+  }
+  .ft-chip.coletado-chip .cnt{background:rgba(124,58,237,.12);color:#6d28d9}
+  .ft-chip.coletado-chip.active .cnt{background:rgba(255,255,255,.28);color:#fff}
+
+  @media (max-width:700px){
+    .head-text h1{font-size:15px;letter-spacing:.2px}
+    .brand-logo{height:32px}
+    main{padding:0 12px 60px;margin-top:14px}
+    .card{padding:16px;border-radius:16px}
+    .toolbar{flex-direction:column;align-items:stretch;gap:10px}
+    .search-wrap{max-width:none}
+    .date-filter{justify-content:space-between}
+    .date-filter input[type="date"]{flex:1;min-width:0}
+    .toolbar-right{justify-content:space-between}
+    .ft-filter-stack{width:100%}
+    .ft-filter{width:100%}
+    .etq-client{font-size:32px;padding:12px 16px}
+    .etq-desc{font-size:22px;padding:10px 16px}
+    .etq-row3{font-size:20px;padding:10px 16px;gap:6px}
+    .etq-row3.etq-row3-ft{font-size:17px;gap:6px}
+    .etq-row3.etq-row3-ft .etq-medida{gap:5px}
+    .etq-row3.etq-row3-ft .etq-medida .etq-lbl{font-size:11px;letter-spacing:.8px}
+    .etq-row3.etq-row3-ft .etq-medida .etq-vlr{font-size:19px}
+    .etq-obs{font-size:20px;min-height:34px;padding:12px 16px}
+    .etq-foot{font-size:20px;padding:12px 16px}
+    .etq-foot .qty .seq b{font-size:26px}
+    .etq-foot .qty .seq i{font-size:14px;letter-spacing:1.2px}
+    .etq-company-name{font-size:16px}
+    .etq-company-info{font-size:11px}
+    .etq-logo-box{width:80px;height:48px}
+    .etq-head{padding:9px 12px;gap:12px}
+    #labelContent{padding:12px}
+    .tab{padding:10px 14px;font-size:11px}
+    .main-tab{padding:9px 14px;font-size:11px}
+    .modal-actions{padding:12px 14px}
+    .edit-hint{font-size:10.5px;width:100%}
+    .upload-bar{flex-wrap:wrap}
+    .upload-bar .u-text{font-size:11.5px}
+    .row-btn{width:32px;height:32px}
+    .row-btn svg{width:15px;height:15px}
+  }
+
+  @media print{
+    body > header, body > main{display:none !important}
+    body{background:#fff !important}
+    .modal-overlay{
+      position:static !important;inset:auto !important;background:transparent !important;
+      backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+      padding:0 !important;display:block !important;animation:none !important;
+    }
+    .modal{
+      box-shadow:none !important;border-radius:0 !important;max-width:100% !important;
+      max-height:none !important;overflow:visible !important;animation:none !important;
+    }
+    .modal-close, .modal-actions, .label-actions{display:none !important}
+    #labelContent{padding:0 !important}
+    .etq{border-radius:0 !important}
+    .etq [contenteditable="true"]{background:transparent !important;box-shadow:none !important}
+    .label-page{margin:0 !important;padding:0 !important;border:none !important;page-break-after:always;break-after:page}
+    .label-page:last-child{page-break-after:auto;break-after:auto}
+    @page{margin:8mm}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <a class="brand" href="#" title="Grupo Hidrogood" onclick="return false;">
+      <img class="brand-logo"
+           src="https://ibrahort.org.br/wp-content/uploads/2025/02/logo-grupo-hidrogoodresultado.webp"
+           alt="Grupo Hidrogood">
+    </a>
+    <div class="brand-divider"></div>
+    <div class="head-text">
+      <h1>GESTÃO DE ETIQUETAS</h1>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============ Upload base principal ============ -->
+  <section class="upload-bar" id="dropzone">
+    <span class="u-icon">📁</span>
+    <div class="u-text">
+      <span id="uploadLabel">Arraste o arquivo <b>Orden de Produção</b> aqui ou clique em carregar</span>
+      <small>Formatos aceitos: XLSX · XLS · XLSM · CSV</small>
+    </div>
+    <button class="btn-upload" id="btnPick">Carregar Excel</button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.csv" hidden>
+    <div id="status" class="status"></div>
+  </section>
+
+  <!-- ============ Upload base COLETADOS ============ -->
+  <section class="upload-bar coletados-bar" id="dropzoneColetados">
+    <span class="u-icon">✓</span>
+    <div class="u-text">
+      <span id="uploadLabelColetados">Carregar base <b>COLETADOS</b> para cruzamento (por NÚMERO_DO_PEDIDO)</span>
+      <small>Se a base não for carregada, todos aparecerão como <b>NÃO</b> coletados</small>
+    </div>
+    <button class="btn-upload coletados-btn" id="btnPickColetados">Carregar Coletados</button>
+    <input type="file" id="fileInputColetados" accept=".xlsx,.xls,.xlsm,.csv" hidden>
+    <div id="statusColetados" class="status"></div>
+  </section>
+
+  <div id="sheetWrap" class="sheet-inline hidden">
+    <label for="sheetSelect">Planilha:</label>
+    <select id="sheetSelect"></select>
+  </div>
+
+  <div class="main-tabs" id="mainTabs">
+    <button class="main-tab active" data-main="recolhimento" type="button">
+      <span class="mt-icon">🏷</span> RECOLHIMENTO
+    </button>
+    <button class="main-tab" data-main="filmeTela" type="button">
+      <span class="mt-icon">🎞</span> FILME / TELA
+    </button>
+  </div>
+
+  <section class="card hidden" id="cardRecolhimento">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="inicio" type="button">
+        INÍCIO <span class="tab-count" id="countInicio">0</span>
+      </button>
+      <button class="tab" data-tab="impressos" type="button">
+        RECOLHIMENTOS IMPRESSOS <span class="tab-count" id="countImpressos">0</span>
+      </button>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <input type="search" id="search" placeholder="Pesquisar nos resultados...">
+      </div>
+
+      <div class="date-filter" title="Filtrar por DATA DO PV">
+        <span class="df-icon">📅</span>
+        <label for="dataInicio">De</label>
+        <input type="date" id="dataInicio">
+        <span class="df-sep">até</span>
+        <input type="date" id="dataFim">
+        <button class="df-clear hidden" id="btnClearDates" title="Limpar filtro de data" type="button">✕</button>
+      </div>
+
+      <div class="ft-filter coletado-group" id="coletadoFilterRec">
+        <span class="ft-icon">✓</span>
+        <button class="ft-chip coletado-chip" data-coletado="NAO" type="button">NÃO <span class="cnt" id="cntColNaoRec">0</span></button>
+        <button class="ft-chip coletado-chip" data-coletado="SIM" type="button">SIM <span class="cnt" id="cntColSimRec">0</span></button>
+        <button class="ft-chip coletado-chip" data-coletado="TODOS" type="button">TODOS <span class="cnt" id="cntColTodosRec">0</span></button>
+      </div>
+
+      <div class="toolbar-right">
+        <span class="badge" id="countBadge">0 registros</span>
+        <button class="btn" id="btnExport">⬇ Exportar Excel</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tbl">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card hidden" id="cardFilmeTela">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <input type="search" id="searchFT" placeholder="Pesquisar em Filme / Tela...">
+      </div>
+
+      <div class="ft-filter-stack">
+        <div class="ft-filter" id="ftFilter">
+          <span class="ft-icon">🔽</span>
+          <button class="ft-chip" data-ft="" type="button">TODOS <span class="cnt" id="cntTodos">0</span></button>
+          <button class="ft-chip" data-ft="FILME" type="button">FILME <span class="cnt" id="cntFilme">0</span></button>
+          <button class="ft-chip" data-ft="TELA" type="button">TELA <span class="cnt" id="cntTela">0</span></button>
+          <button class="ft-chip" data-ft="RAFIA" type="button">RÁFIA <span class="cnt" id="cntRafia">0</span></button>
+        </div>
+
+        <div class="ft-filter corte-group" id="ftCorteFilter">
+          <span class="ft-icon">✂</span>
+          <button class="ft-chip corte-chip" data-corte="" type="button">TODOS <span class="cnt" id="cntCorteTodos">0</span></button>
+          <button class="ft-chip corte-chip" data-corte="PENDENTE" type="button">PENDENTE <span class="cnt" id="cntCortePendente">0</span></button>
+          <button class="ft-chip corte-chip" data-corte="CORTADO" type="button">CORTADO <span class="cnt" id="cntCorteCortado">0</span></button>
+        </div>
+
+        <div class="ft-filter coletado-group" id="coletadoFilterFT">
+          <span class="ft-icon">✓</span>
+          <button class="ft-chip coletado-chip" data-coletado="NAO" type="button">NÃO <span class="cnt" id="cntColNaoFT">0</span></button>
+          <button class="ft-chip coletado-chip" data-coletado="SIM" type="button">SIM <span class="cnt" id="cntColSimFT">0</span></button>
+          <button class="ft-chip coletado-chip" data-coletado="TODOS" type="button">TODOS <span class="cnt" id="cntColTodosFT">0</span></button>
+        </div>
+      </div>
+
+      <div class="date-filter" title="Filtrar por DATA DO PV">
+        <span class="df-icon">📅</span>
+        <label for="dataInicioFT">De</label>
+        <input type="date" id="dataInicioFT">
+        <span class="df-sep">até</span>
+        <input type="date" id="dataFimFT">
+        <button class="df-clear hidden" id="btnClearDatesFT" title="Limpar filtro de data" type="button">✕</button>
+      </div>
+
+      <div class="toolbar-right">
+        <span class="badge" id="countBadgeFT">0 registros</span>
+        <button class="btn" id="btnExportFT">⬇ Exportar Excel</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tblFT">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="modal-overlay hidden" id="modalOverlay" role="dialog" aria-modal="true" aria-label="Etiqueta de produção">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" id="modalClose" title="Fechar (Esc)">✕</button>
+    <div id="labelContent"></div>
+    <div class="modal-actions">
+      <span class="edit-hint">Campos editáveis · alterações salvas automaticamente</span>
+      <div class="modal-buttons">
+        <button class="btn" id="btnPrint">🖨 Imprimir etiquetas</button>
+        <button class="btn primary" id="btnCloseFoot">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1) CONFIGURAÇÃO
+   ========================================================= */
+
+const FILTROS_RECOLHIMENTO = [
+  'PERFIL RECOLHIMENTO FOOD GRADE 850 100 X 120',
+  'PERFIL RECOLHIMENTO PREMIUM 850 100 X 120',
+  'PERFIL DE RECOLHIMENTO PREMIUM 890 - 100 X 120',
+  'PERFIL RECOLHIMENTO PREMIUM 680 HPM 100 X 100',
+  'PERFIL DE RECOLHIMENTO PARA CALHA UNIVERSAL'
+];
+
+const EXCLUSOES = [
+  'PORTA','SISTEMA','ESTRUTURA','GRAMPO',
+  'ANTECAMARA','ANTE CAMARA','ANTICAMARA','ANTI CAMARA'
+];
+
+const COLUNAS_RECOLHIMENTO = [
+  { label:'DATA DO PV',  aliases:['EMISSAO_DA_OP','EMISSAO DA OP','EMISSÃO_DA_OP','DATA DO PV','DATA EMISSAO OP'] },
+  { label:'PV',          aliases:['CODIGO_DA_REVISAO','CODIGO DA REVISAO','CÓDIGO_DA_REVISÃO','PV'] },
+  { label:'CLIENTE',     aliases:['NOME_DO_CLIENTE','NOME DO CLIENTE','CLIENTE'] },
+  { label:'COMPRIMENTO', aliases:['COMPRIMENTO'] },
+  { label:'FURAÇÃO',     aliases:['BARRA','FURACAO','FURAÇÃO'] },
+  { label:'DIÂMETRO',    aliases:['FURACAO_ENCAIXE','FURACAO ENCAIXE','FURAÇÃO_ENCAIXE','DIAMETRO','DIÂMETRO'] },
+  { label:'OBSERVAÇÃO',  aliases:['OBSERVACAO','OBSERVAÇÃO','OBS'] },
+  { label:'CÓD',         aliases:['MATERIAL','COD','CÓD'] },
+  { label:'DESCRIÇÃO',   aliases:['DESCRICAO','DESCRIÇÃO','DESCRICAO DO PRODUTO'] },
+  { label:'QTDE',        aliases:['QUANTIDADE_NECESSARIA_B','QUANTIDADE NECESSARIA B','QUANTIDADE_NECESSÁRIA_B','QTDE'] },
+  { label:'QTDE AMARRADOS', computed:true }
+];
+
+const COLUNAS_FT = [
+  { label:'DATA DO PV',  aliases:['EMISSAO_DA_OP','EMISSAO DA OP','EMISSÃO_DA_OP','DATA DO PV','DATA EMISSAO OP'] },
+  { label:'PV',          aliases:['CODIGO_DA_REVISAO','CODIGO DA REVISAO','CÓDIGO_DA_REVISÃO','PV'] },
+  { label:'CLIENTE',     aliases:['NOME_DO_CLIENTE','NOME DO CLIENTE','CLIENTE'] },
+  { label:'LARGURA',     computed:true },
+  { label:'COMPRIMENTO', computed:true },
+  { label:'OBSERVAÇÃO',  aliases:['OBSERVACAO','OBSERVAÇÃO','OBS'] },
+  { label:'CÓD',         aliases:['MATERIAL','COD','CÓD'] },
+  { label:'DESCRIÇÃO',   aliases:['DESCRICAO','DESCRIÇÃO','DESCRICAO DO PRODUTO'] },
+  { label:'QTDE',        aliases:['QUANTIDADE_NECESSARIA_B','QUANTIDADE NECESSARIA B','QUANTIDADE_NECESSÁRIA_B','QTDE'] }
+];
+
+/* Coluna do arquivo COLETADOS usada como chave de cruzamento */
+const COLETADOS_KEY_ALIASES = [
+  'NUMERO_DO_PEDIDO','NÚMERO_DO_PEDIDO',
+  'NUMERO DO PEDIDO','NÚMERO DO PEDIDO',
+  'NUMERODOPEDIDO','NUMEROPEDIDO',
+  'NRO_PEDIDO','NR_PEDIDO','NROPEDIDO',
+  'PEDIDO'
+];
+
+const ETQ_EMPRESA = {
+  nome: 'HIDROGOOD HORTICULTURA MODERNA',
+  cnpj: 'CNPJ 08.046.901/0001-26',
+  fone: '(19) 3199-6974',
+  logo: 'https://ibrahort.org.br/wp-content/uploads/2025/02/logo-grupo-hidrogoodresultado.webp'
+};
+
+let ETQ_LOGO_SRC = ETQ_EMPRESA.logo;
+
+const LOGO_FALLBACK_SVG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">' +
+    '<rect width="200" height="60" fill="#fff"/>' +
+    '<text x="100" y="30" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="900" fill="#111" text-anchor="middle" letter-spacing="1">HIDROGOOD</text>' +
+    '<text x="100" y="48" font-family="Arial,Helvetica,sans-serif" font-size="10" font-weight="700" fill="#111" text-anchor="middle" letter-spacing="1.5">HORTICULTURA MODERNA</text>' +
+  '</svg>'
+);
+
+function loadLogoAsDataURL(url) {
+  return new Promise((resolve, reject) => {
+    fetch(url, { mode: 'cors', cache: 'default' })
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+      .then(blob => {
+        const fr = new FileReader();
+        fr.onloadend = () => resolve(fr.result);
+        fr.onerror = () => reject(fr.error);
+        fr.readAsDataURL(blob);
+      })
+      .catch(() => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const c = document.createElement('canvas');
+            c.width = img.naturalWidth || 200;
+            c.height = img.naturalHeight || 60;
+            c.getContext('2d').drawImage(img, 0, 0);
+            resolve(c.toDataURL('image/png'));
+          } catch (e) { reject(e); }
+        };
+        img.onerror = () => reject(new Error('image load failed'));
+        img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      });
+  });
+}
+
+(async () => {
+  try {
+    ETQ_LOGO_SRC = await loadLogoAsDataURL(ETQ_EMPRESA.logo);
+    console.info('[Hidrogood] Logo convertida para base64 com sucesso.');
+  } catch (e) {
+    ETQ_LOGO_SRC = ETQ_EMPRESA.logo;
+    console.info('[Hidrogood] CORS bloqueou a conversão. Usando URL direta.', e.message);
+  }
+})();
+
+/* =========================================================
+   2) HELPERS
+   ========================================================= */
+const norm = v => String(v ?? '')
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .toUpperCase().replace(/\s+/g, ' ').trim();
+
+const loose = v => norm(v).replace(/[^A-Z0-9]/g, '');
+
+/* Chave para cruzamento: só dígitos, sem zeros à esquerda */
+const chaveNumero = v => {
+  const s = String(v ?? '').trim();
+  if (!s) return '';
+  const digits = s.replace(/\D/g, '');
+  if (!digits) return '';
+  return digits.replace(/^0+/, '') || digits;
+};
+
+const FILTRO_MAP_REC = new Map();
+FILTROS_RECOLHIMENTO.forEach(f => FILTRO_MAP_REC.set(loose(f), f));
+
+const EXCLUSOES_NORM = EXCLUSOES.map(norm);
+const EXCLUSOES_LOOSE = EXCLUSOES.map(loose);
+
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s).replace(/[&<>"']/g, m =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+
+const sanitizeFile = s => String(s ?? '')
+  .trim().replace(/[^\w\d-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'etiqueta';
+
+function limparNomeCliente(nome) {
+  if (nome == null) return '';
+  const original = String(nome).trim();
+  if (!original) return '';
+  let limpo = original.replace(/^[\d.\-\/\s]+(?=[A-Za-zÀ-ÿ])/, '');
+  limpo = limpo.replace(/^\s+/, '').trim();
+  return limpo || original;
+}
+
+function toNumber(v) {
+  if (v === '' || v == null) return NaN;
+  if (typeof v === 'number') return v;
+  const s = String(v).trim().replace(/\s/g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isFinite(n) ? n : NaN;
+}
+
+function fmtData(v) {
+  if (v === '' || v == null) return '';
+  if (v instanceof Date && !isNaN(v))
+    return pad(v.getDate()) + '/' + pad(v.getMonth() + 1) + '/' + v.getFullYear();
+  if (typeof v === 'number' && v > 20000 && v < 80000) {
+    const d = new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000);
+    return pad(d.getUTCDate()) + '/' + pad(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear();
+  }
+  const s = String(v).trim();
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+  return s;
+}
+
+function fmtValor(v) {
+  if (v === '' || v == null) return '';
+  if (v instanceof Date) return fmtData(v);
+  if (typeof v === 'number') {
+    if (Number.isInteger(v)) return String(v);
+    return String(Math.round(v * 1000) / 1000).replace('.', ',');
+  }
+  return String(v).trim();
+}
+
+function fmtRatio(n) {
+  if (!isFinite(n)) return '';
+  const r = Math.round(n * 100) / 100;
+  return String(r).replace('.', ',');
+}
+
+function parseDateBR(s) {
+  const m = String(s ?? '').match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!m) return null;
+  const d = new Date(+m[3], +m[2] - 1, +m[1]);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function calcAmarrados(descricao, qtdeNum) {
+  if (!isFinite(qtdeNum)) return '';
+  const d = norm(descricao);
+  if (d.includes('100 X 120')) return String(Math.ceil(qtdeNum / 6));
+  if (d.includes('100 X 100')) return String(Math.ceil(qtdeNum / 9));
+  return fmtRatio(qtdeNum);
+}
+
+function isExcluido(descricao) {
+  const dNorm = norm(descricao);
+  const dLoose = loose(descricao);
+  for (let i = 0; i < EXCLUSOES.length; i++) {
+    if (dNorm.includes(EXCLUSOES_NORM[i])) return true;
+    if (EXCLUSOES_LOOSE[i] && dLoose.includes(EXCLUSOES_LOOSE[i])) return true;
+  }
+  return false;
+}
+
+function matchFT(descricao) {
+  const d = norm(descricao);
+  const matches = [];
+  if (d.includes('FILME')) matches.push('FILME');
+  if (d.includes('TELA'))  matches.push('TELA');
+  if (d.includes('RAFIA')) matches.push('RAFIA');
+  return matches;
+}
+
+/* =========================================================
+   EXTRAÇÃO DE MEDIDAS
+   ========================================================= */
+const RE_MEDIDAS = /(\d+(?:[.,]\d+)?)\s*X\s*(\d+(?:[.,]\d+)?)\s*(?:M\b|MTS\b|METROS\b)?/i;
+const RE_DE_M = /DE\s+(\d+(?:[.,]\d+)?)\s*(?:M\b|MTS\b|METROS\b)/i;
+const RE_ROLOS = /(\d+)\s*ROLOS?\b/i;
+
+function numeroDoTexto(txt) {
+  if (txt == null) return NaN;
+  const s = String(txt).trim().replace(/\s/g, '').replace(',', '.');
+  const n = parseFloat(s);
+  return isFinite(n) ? n : NaN;
+}
+
+function extrairLargura(observacao, descricao) {
+  const obs = String(observacao ?? '').trim();
+  const desc = String(descricao ?? '').trim();
+
+  if (obs) {
+    const m = obs.match(RE_MEDIDAS);
+    if (m) return m[1].replace('.', ',') + ' M';
+  }
+  if (desc) {
+    const m = desc.match(RE_DE_M);
+    if (m) return m[1].replace('.', ',') + ' M';
+  }
+  if (obs) {
+    const m = obs.match(RE_DE_M);
+    if (m) return m[1].replace('.', ',') + ' M';
+  }
+  return '';
+}
+
+function extrairLarguraNumero(observacao, descricao) {
+  const txt = extrairLargura(observacao, descricao);
+  if (!txt) return NaN;
+  return numeroDoTexto(txt.replace('M', '').trim());
+}
+
+function extrairComprimento(descricao, observacao, qtdeNum, larguraNum) {
+  const obs = String(observacao ?? '').trim();
+  if (obs) {
+    const m = obs.match(RE_MEDIDAS);
+    if (m) return m[2].replace('.', ',') + ' M';
+  }
+  if (!obs) {
+    if (isFinite(qtdeNum) && isFinite(larguraNum) && larguraNum !== 0) {
+      return fmtRatio(qtdeNum / larguraNum) + ' M';
+    }
+  }
+  return '';
+}
+
+function extrairQtdeRolos(observacao, descricao) {
+  const obs = String(observacao ?? '').trim();
+  const desc = String(descricao ?? '').trim();
+
+  if (obs) {
+    const m = obs.match(RE_ROLOS);
+    if (m) { const n = parseInt(m[1], 10); if (isFinite(n) && n > 0) return String(n); }
+  }
+  if (desc) {
+    const m = desc.match(RE_ROLOS);
+    if (m) { const n = parseInt(m[1], 10); if (isFinite(n) && n > 0) return String(n); }
+  }
+  return '1';
+}
+
+const ICON_ETIQUETA = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+    <line x1="7" y1="7" x2="7.01" y2="7"/>
+  </svg>`;
+
+/* =========================================================
+   3) ESTADO
+   ========================================================= */
+let workbook = null;
+
+let dadosRec = [];
+let currentTabRec = 'inicio';
+let editandoRow = null;
+
+let dadosFT = [];
+let currentFTFilter = '';
+let currentCorteFilter = '';
+let editandoRowFT = null;
+
+/* COLETADOS */
+let coletadosSet = new Set();       // Set de chaves numéricas dos NÚMEROS_DO_PEDIDO coletados
+let coletadosNomeArquivo = '';
+let currentColetadoFilterRec = 'NAO';   // Default NÃO
+let currentColetadoFilterFT  = 'NAO';   // Default NÃO
+
+/* =========================================================
+   4) REFS
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const dropzone   = $('dropzone');
+const fileInput  = $('fileInput');
+const statusEl   = $('status');
+const cardRec    = $('cardRecolhimento');
+const cardFT     = $('cardFilmeTela');
+const tblRec     = $('tbl');
+const tblFT      = $('tblFT');
+const overlay    = $('modalOverlay');
+const labelBox   = $('labelContent');
+
+const dropzoneColetados = $('dropzoneColetados');
+const fileInputColetados = $('fileInputColetados');
+const statusColetadosEl  = $('statusColetados');
+
+const dataInicio = $('dataInicio');
+const dataFim    = $('dataFim');
+const btnClearDates = $('btnClearDates');
+
+const dataInicioFT = $('dataInicioFT');
+const dataFimFT    = $('dataFimFT');
+const btnClearDatesFT = $('btnClearDatesFT');
+
+function setStatus(msg, tipo = 'info') {
+  statusEl.textContent = msg;
+  statusEl.className = 'status ' + tipo;
+}
+function setStatusColetados(msg, tipo = 'purple') {
+  statusColetadosEl.textContent = msg;
+  statusColetadosEl.className = 'status ' + tipo;
+}
+
+/* =========================================================
+   5) LEITURA DO ARQUIVO PRINCIPAL
+   ========================================================= */
+$('btnPick').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length) lerArquivo(e.target.files[0]);
+});
+
+['dragenter','dragover'].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('drag'); }));
+
+dropzone.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0];
+  if (f) lerArquivo(f);
+});
+
+function lerArquivo(file) {
+  setStatus('⏳ Lendo "' + file.name + '"...', 'info');
+  const reader = new FileReader();
+  reader.onerror = () => setStatus('❌ Erro ao ler o arquivo.', 'err');
+  reader.onload = ev => {
+    try {
+      const data = new Uint8Array(ev.target.result);
+      workbook = XLSX.read(data, { type:'array', cellDates:true });
+
+      if (!workbook.SheetNames.length) {
+        setStatus('❌ Nenhuma planilha encontrada.', 'err');
+        return;
+      }
+
+      const sel = $('sheetSelect');
+      sel.innerHTML = workbook.SheetNames
+        .map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+      $('sheetWrap').classList.toggle('hidden', workbook.SheetNames.length < 2);
+
+      processarPlanilha(workbook.SheetNames[0]);
+    } catch (err) {
+      console.error(err);
+      setStatus('❌ Arquivo inválido ou corrompido.', 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+$('sheetSelect').addEventListener('change', e => processarPlanilha(e.target.value));
+
+/* =========================================================
+   6) LEITURA DO ARQUIVO COLETADOS
+   ========================================================= */
+$('btnPickColetados').addEventListener('click', () => fileInputColetados.click());
+fileInputColetados.addEventListener('change', e => {
+  if (e.target.files.length) lerArquivoColetados(e.target.files[0]);
+});
+
+['dragenter','dragover'].forEach(ev =>
+  dropzoneColetados.addEventListener(ev, e => { e.preventDefault(); dropzoneColetados.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev =>
+  dropzoneColetados.addEventListener(ev, e => { e.preventDefault(); dropzoneColetados.classList.remove('drag'); }));
+
+dropzoneColetados.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0];
+  if (f) lerArquivoColetados(f);
+});
+
+function lerArquivoColetados(file) {
+  setStatusColetados('⏳ Lendo "' + file.name + '"...', 'info');
+  const reader = new FileReader();
+  reader.onerror = () => setStatusColetados('❌ Erro ao ler o arquivo.', 'err');
+  reader.onload = ev => {
+    try {
+      const data = new Uint8Array(ev.target.result);
+      const wb = XLSX.read(data, { type:'array', cellDates:true });
+
+      if (!wb.SheetNames.length) {
+        setStatusColetados('❌ Nenhuma planilha encontrada.', 'err');
+        return;
+      }
+
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa = XLSX.utils.sheet_to_json(ws, {
+        header:1, raw:true, defval:'', blankrows:false
+      });
+
+      if (!aoa.length) {
+        setStatusColetados('❌ Planilha vazia.', 'err');
+        return;
+      }
+
+      /* Localizar cabeçalho pelo NÚMERO_DO_PEDIDO */
+      let linhaCab = -1, idxKey = -1;
+      const limite = Math.min(aoa.length, 30);
+
+      for (let i = 0; i < limite; i++) {
+        const linha = (aoa[i] || []).map(loose);
+        let k = -1;
+        for (const a of COLETADOS_KEY_ALIASES) {
+          const pos = linha.indexOf(loose(a));
+          if (pos !== -1) { k = pos; break; }
+        }
+        if (k !== -1) {
+          linhaCab = i;
+          idxKey = k;
+          break;
+        }
+      }
+
+      if (linhaCab === -1 || idxKey === -1) {
+        setStatusColetados('❌ Coluna NÚMERO_DO_PEDIDO não encontrada.', 'err');
+        return;
+      }
+
+      /* Montar Set de chaves — cada linha com NÚMERO_DO_PEDIDO preenchido é um coletado */
+      const novoSet = new Set();
+      let totalLidos = 0;
+
+      for (let i = linhaCab + 1; i < aoa.length; i++) {
+        const row = aoa[i] || [];
+        const valor = row[idxKey];
+        const k = chaveNumero(valor);
+        if (k) {
+          novoSet.add(k);
+          totalLidos++;
+        }
+      }
+
+      if (!novoSet.size) {
+        setStatusColetados('⚠️ Nenhum NÚMERO_DO_PEDIDO válido encontrado.', 'err');
+        return;
+      }
+
+      coletadosSet = novoSet;
+      coletadosNomeArquivo = file.name;
+      setStatusColetados(`✅ ${totalLidos} coletado(s) carregado(s) de "${file.name}".`, 'ok');
+
+      /* Reprocessa para atualizar coluna Coletado? nas duas abas */
+      renderRec();
+      renderFT();
+    } catch (err) {
+      console.error(err);
+      setStatusColetados('❌ Arquivo inválido ou corrompido.', 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* Verifica se uma linha (com PV) está coletada */
+function isColetado(r) {
+  if (!coletadosSet.size) return false;
+  const k = chaveNumero(r['PV']);
+  if (!k) return false;
+  return coletadosSet.has(k);
+}
+
+/* =========================================================
+   7) PROCESSAMENTO — BASE PRINCIPAL
+   ========================================================= */
+function processarPlanilha(nomeAba) {
+  const ws = workbook.Sheets[nomeAba];
+  if (!ws) return;
+
+  const aoa = XLSX.utils.sheet_to_json(ws, {
+    header:1, raw:true, defval:'', blankrows:false
+  });
+
+  if (!aoa.length) { setStatus('❌ Planilha vazia.', 'err'); return; }
+
+  const colunasBusca = COLUNAS_RECOLHIMENTO.concat(COLUNAS_FT);
+  let linhaCab = -1, melhorScore = 0;
+  const limite = Math.min(aoa.length, 30);
+
+  for (let i = 0; i < limite; i++) {
+    const linha = (aoa[i] || []).map(loose);
+    let score = 0;
+    for (const c of colunasBusca) {
+      if (!c.aliases) continue;
+      if (c.aliases.some(a => linha.includes(loose(a)))) score++;
+    }
+    if (score > melhorScore) { melhorScore = score; linhaCab = i; }
+  }
+
+  if (linhaCab === -1 || melhorScore < 3) {
+    setStatus('❌ Cabeçalho não localizado.', 'err');
+    return;
+  }
+
+  const cabecalho = (aoa[linhaCab] || []).map(loose);
+
+  function mapearColunas(lista) {
+    const mapa = {};
+    for (const c of lista) {
+      if (c.computed || !c.aliases) { mapa[c.label] = -1; continue; }
+      let idx = -1;
+      for (const a of c.aliases) {
+        const k = cabecalho.indexOf(loose(a));
+        if (k !== -1) { idx = k; break; }
+      }
+      mapa[c.label] = idx;
+    }
+    return mapa;
+  }
+
+  const mapaRec = mapearColunas(COLUNAS_RECOLHIMENTO);
+  const mapaFT  = mapearColunas(COLUNAS_FT);
+
+  if (mapaRec['DESCRIÇÃO'] === -1 && mapaFT['DESCRIÇÃO'] === -1) {
+    setStatus('❌ Coluna DESCRIÇÃO não encontrada.', 'err');
+    return;
+  }
+
+  dadosRec = [];
+  dadosFT = [];
+
+  const idxDescRec = mapaRec['DESCRIÇÃO'];
+  const idxQtdeRec = mapaRec['QTDE'];
+  const idxCompRec = mapaRec['COMPRIMENTO'];
+
+  const idxDescFT = mapaFT['DESCRIÇÃO'];
+  const idxQtdeFT = mapaFT['QTDE'];
+
+  let totalExcluidos = 0;
+
+  for (let i = linhaCab + 1; i < aoa.length; i++) {
+    const row = aoa[i] || [];
+    const descricaoBruta = idxDescRec >= 0 ? row[idxDescRec] : row[idxDescFT];
+    const chave = loose(descricaoBruta);
+    if (!chave) continue;
+
+    if (isExcluido(descricaoBruta)) {
+      totalExcluidos++;
+      continue;
+    }
+
+    /* ---------- RECOLHIMENTO ---------- */
+    if (FILTRO_MAP_REC.has(chave)) {
+      const numQtde = idxQtdeRec >= 0 ? toNumber(row[idxQtdeRec]) : NaN;
+      const numComp = idxCompRec >= 0 ? toNumber(row[idxCompRec]) : NaN;
+      const qtdeFinal = (isFinite(numQtde) && isFinite(numComp) && numComp !== 0)
+        ? numQtde / numComp
+        : NaN;
+
+      const obj = {};
+      for (const c of COLUNAS_RECOLHIMENTO) {
+        if (c.computed) continue;
+        const j = mapaRec[c.label];
+        let val = '';
+        if (c.label === 'DATA DO PV') val = fmtData(j >= 0 ? row[j] : '');
+        else if (c.label === 'QTDE')  val = fmtRatio(qtdeFinal);
+        else                          val = fmtValor(j >= 0 ? row[j] : '');
+        obj[c.label] = val;
+      }
+      obj['QTDE AMARRADOS'] = calcAmarrados(descricaoBruta, qtdeFinal);
+      obj.__key = chave;
+      obj.__id  = 'rec' + dadosRec.length + '_' + chave.slice(0, 6);
+      obj.__impresso = false;
+      dadosRec.push(obj);
+    }
+
+    /* ---------- FILME / TELA / RÁFIA ---------- */
+    const matches = matchFT(descricaoBruta);
+    if (matches.length) {
+      const obj = {};
+      for (const c of COLUNAS_FT) {
+        if (c.computed) continue;
+        const j = mapaFT[c.label];
+        let val = '';
+        if (c.label === 'DATA DO PV') val = fmtData(j >= 0 ? row[j] : '');
+        else                          val = fmtValor(j >= 0 ? row[j] : '');
+        obj[c.label] = val;
+      }
+
+      const obsBruta = obj['OBSERVAÇÃO'];
+      const qtdeNumFT = idxQtdeFT >= 0 ? toNumber(row[idxQtdeFT]) : NaN;
+
+      obj['LARGURA'] = extrairLargura(obsBruta, descricaoBruta);
+
+      const larguraNum = extrairLarguraNumero(obsBruta, descricaoBruta);
+      obj['COMPRIMENTO'] = extrairComprimento(descricaoBruta, obsBruta, qtdeNumFT, larguraNum);
+
+      obj['QTDE ROLOS'] = extrairQtdeRolos(obsBruta, descricaoBruta);
+
+      obj.__categoria = matches[0];
+      obj.__matches = matches;
+      obj.__key = chave;
+      obj.__id  = 'ft' + dadosFT.length + '_' + chave.slice(0, 6);
+      obj.__impresso = false;
+      obj.__corte = false;
+      dadosFT.push(obj);
+    }
+  }
+
+  const totalRec = dadosRec.length;
+  const totalFT  = dadosFT.length;
+
+  if (!totalRec && !totalFT) {
+    cardRec.classList.add('hidden');
+    cardFT.classList.add('hidden');
+    setStatus(`⚠️ Nenhum registro encontrado. ${totalExcluidos} linha(s) excluída(s) pelos filtros.`, 'err');
+    return;
+  }
+
+  let msgStatus = `✅ ${totalRec} recolhimento(s) · ${totalFT} filme/tela.`;
+  if (totalExcluidos > 0) msgStatus += ` · ${totalExcluidos} excluído(s).`;
+  setStatus(msgStatus, 'ok');
+
+  if (totalRec) {
+    cardRec.classList.remove('hidden');
+    currentTabRec = 'inicio';
+    atualizarSubTabsAtivas();
+    montarCabecalhoRec();
+  } else {
+    cardRec.classList.add('hidden');
+  }
+
+  if (totalFT) {
+    cardFT.classList.remove('hidden');
+    currentFTFilter = '';
+    currentCorteFilter = '';
+    atualizarFTChips();
+    montarCabecalhoFT();
+  } else {
+    cardFT.classList.add('hidden');
+  }
+
+  renderRec();
+  renderFT();
+
+  setMainTab(totalRec ? 'recolhimento' : 'filmeTela');
+}
+
+/* =========================================================
+   8) ABAS PRINCIPAIS
+   ========================================================= */
+const mainTabsEl = $('mainTabs');
+
+function setMainTab(nome) {
+  mainTabsEl.querySelectorAll('.main-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.main === nome);
+  });
+  cardRec.classList.toggle('hidden', nome !== 'recolhimento' || !dadosRec.length);
+  cardFT.classList.toggle('hidden',  nome !== 'filmeTela'    || !dadosFT.length);
+}
+
+mainTabsEl.addEventListener('click', e => {
+  const tab = e.target.closest('.main-tab');
+  if (!tab) return;
+  setMainTab(tab.dataset.main);
+});
+
+/* =========================================================
+   9) SUB-TABS
+   ========================================================= */
+const tabsEl = $('tabs');
+
+function atualizarSubTabsAtivas() {
+  tabsEl.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === currentTabRec);
+  });
+}
+
+tabsEl.addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  if (tab.dataset.tab === currentTabRec) return;
+  currentTabRec = tab.dataset.tab;
+  atualizarSubTabsAtivas();
+  renderRec();
+});
+
+/* Aplica o filtro de coletado conforme regra (default NÃO) */
+function passaFiltroColetado(r, filtro) {
+  const col = isColetado(r);
+  if (filtro === 'SIM')    return col;
+  if (filtro === 'NAO')    return !col;
+  return true; // TODOS
+}
+
+/* =========================================================
+   10) RENDERIZAÇÃO — RECOLHIMENTO
+   ========================================================= */
+function montarCabecalhoRec() {
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<th class="flag-cell" title="Marcar como impresso">IMPRESSO?</th>' +
+    '<th class="idx">#</th>' +
+    COLUNAS_RECOLHIMENTO.map(c => `<th>${esc(c.label)}</th>`).join('') +
+    '<th class="coletado-cell" title="Status de coleta">COLETADO?</th>' +
+    '<th class="act"></th>';
+  const thead = tblRec.querySelector('thead');
+  thead.innerHTML = '';
+  thead.appendChild(tr);
+}
+
+function updateTabCounts() {
+  const inicio    = dadosRec.filter(r => !r.__impresso).length;
+  const impressos = dadosRec.filter(r =>  r.__impresso).length;
+  $('countInicio').textContent    = inicio;
+  $('countImpressos').textContent = impressos;
+}
+
+function updateDateClearButton() {
+  const tem = !!(dataInicio.value || dataFim.value);
+  btnClearDates.classList.toggle('hidden', !tem);
+}
+
+/* Atualiza chips e contadores do filtro coletado (Recolhimento) */
+function atualizarColetadoChipsRec() {
+  const todos = dadosRec.length;
+  let sim = 0, nao = 0;
+  dadosRec.forEach(r => { if (isColetado(r)) sim++; else nao++; });
+
+  $('cntColSimRec').textContent    = sim;
+  $('cntColNaoRec').textContent    = nao;
+  $('cntColTodosRec').textContent  = todos;
+
+  document.querySelectorAll('#coletadoFilterRec .ft-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.coletado === currentColetadoFilterRec);
+  });
+}
+
+$('coletadoFilterRec').addEventListener('click', e => {
+  const chip = e.target.closest('.ft-chip');
+  if (!chip) return;
+  currentColetadoFilterRec = chip.dataset.coletado;
+  atualizarColetadoChipsRec();
+  renderRec();
+});
+
+function renderRec() {
+  updateTabCounts();
+  updateDateClearButton();
+  atualizarColetadoChipsRec();
+
+  const q = norm($('search').value);
+
+  const dtIni = dataInicio.value ? new Date(dataInicio.value + 'T00:00:00') : null;
+  const dtFim = dataFim.value   ? new Date(dataFim.value   + 'T23:59:59') : null;
+  const temFiltroData = !!(dtIni || dtFim);
+
+  const base = dadosRec.filter(r => {
+    if (currentTabRec === 'inicio' ? r.__impresso : !r.__impresso) return false;
+
+    /* Filtro Coletado (default NÃO) */
+    if (!passaFiltroColetado(r, currentColetadoFilterRec)) return false;
+
+    if (temFiltroData) {
+      const d = parseDateBR(r['DATA DO PV']);
+      if (!d) return false;
+      if (dtIni && d < dtIni) return false;
+      if (dtFim && d > dtFim) return false;
+    }
+    return true;
+  });
+
+  const lista = q
+    ? base.filter(r => COLUNAS_RECOLHIMENTO.some(c => norm(r[c.label]).includes(q)))
+    : base;
+
+  const tbody = tblRec.querySelector('tbody');
+  const totalCols = COLUNAS_RECOLHIMENTO.length + 4;
+
+  if (!lista.length) {
+    const icone = currentTabRec === 'impressos' ? '🏷' : '📋';
+    let msg;
+    if (currentColetadoFilterRec === 'NAO') {
+      msg = 'Nenhum registro <b>pendente de coleta</b>. Tudo já foi coletado. ✓';
+    } else if (currentColetadoFilterRec === 'SIM') {
+      msg = 'Nenhum registro <b>coletado</b> ainda.';
+    } else if (temFiltroData) {
+      msg = 'Nenhum registro no intervalo de datas selecionado.';
+    } else if (q) {
+      msg = 'Nenhum registro corresponde à pesquisa.';
+    } else if (currentTabRec === 'impressos') {
+      msg = 'Nenhuma etiqueta marcada como impressa ainda.';
+    } else {
+      msg = 'Nenhum registro pendente.';
+    }
+    tbody.innerHTML = `<tr><td colspan="${totalCols}" class="empty"><span class="empty-icon">${icone}</span>${msg}</td></tr>`;
+  } else {
+    const html = [];
+    lista.forEach((r, i) => {
+      const checkedAttr = r.__impresso ? ' checked' : '';
+      const col = isColetado(r);
+      const badgeCls = col ? 'sim' : 'nao';
+      const badgeTxt = col ? 'SIM' : 'NÃO';
+
+      html.push('<tr>');
+      html.push(
+        `<td class="flag-cell">` +
+          `<input type="checkbox" class="flag-cb" data-id="${esc(r.__id)}"${checkedAttr} title="${r.__impresso ? 'Desmarcar (volta para INÍCIO)' : 'Marcar como impresso'}" aria-label="Marcar como impresso">` +
+        `</td>`
+      );
+      html.push(`<td class="idx">${i + 1}</td>`);
+      for (const c of COLUNAS_RECOLHIMENTO) {
+        const raw = r[c.label] ?? '';
+        const val = (c.label === 'CLIENTE') ? limparNomeCliente(raw) : raw;
+        let cls = '';
+        if (c.label === 'DESCRIÇÃO') cls = ' class="desc"';
+        else if (c.label === 'QTDE AMARRADOS') cls = ' class="amarrados"';
+        html.push(`<td${cls} title="${esc(val)}">${esc(val)}</td>`);
+      }
+      html.push(
+        `<td class="coletado-cell">` +
+          `<span class="coletado-badge ${badgeCls}">${badgeTxt}</span>` +
+        `</td>`
+      );
+      html.push(
+        `<td class="act">` +
+          `<button class="row-btn" data-id="${esc(r.__id)}" title="Ver etiqueta" aria-label="Ver etiqueta">${ICON_ETIQUETA}</button>` +
+        `</td>`
+      );
+      html.push('</tr>');
+    });
+    tbody.innerHTML = html.join('');
+  }
+
+  $('countBadge').textContent =
+    lista.length === base.length
+      ? `${base.length} registro${base.length === 1 ? '' : 's'}`
+      : `${lista.length} de ${base.length} registros`;
+}
+
+$('search').addEventListener('input', renderRec);
+dataInicio.addEventListener('change', renderRec);
+dataFim.addEventListener('change', renderRec);
+btnClearDates.addEventListener('click', () => {
+  dataInicio.value = '';
+  dataFim.value = '';
+  renderRec();
+});
+
+tblRec.querySelector('tbody').addEventListener('change', e => {
+  const cb = e.target.closest('.flag-cb');
+  if (!cb) return;
+  const r = dadosRec.find(x => x.__id === cb.dataset.id);
+  if (!r) return;
+  r.__impresso = cb.checked;
+  renderRec();
+});
+
+tblRec.querySelector('tbody').addEventListener('click', e => {
+  const btn = e.target.closest('.row-btn');
+  if (!btn) return;
+  abrirEtiqueta(btn.dataset.id);
+});
+
+/* =========================================================
+   11) RENDERIZAÇÃO — FILME / TELA
+   ========================================================= */
+function montarCabecalhoFT() {
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<th class="flag-cell" title="Marcar como impresso">IMPRESSO</th>' +
+    '<th class="corte-cell" title="Marcar como corte">CORTE</th>' +
+    '<th class="idx">#</th>' +
+    COLUNAS_FT.map(c => `<th>${esc(c.label)}</th>`).join('') +
+    '<th>QTDE ROLOS</th>' +
+    '<th class="coletado-cell" title="Status de coleta">COLETADO?</th>' +
+    '<th class="act"></th>';
+  const thead = tblFT.querySelector('thead');
+  thead.innerHTML = '';
+  thead.appendChild(tr);
+}
+
+function atualizarFTChips() {
+  /* Material */
+  const todos  = dadosFT.length;
+  const filme  = dadosFT.filter(r => r.__categoria === 'FILME').length;
+  const tela   = dadosFT.filter(r => r.__categoria === 'TELA').length;
+  const rafia  = dadosFT.filter(r => r.__categoria === 'RAFIA').length;
+
+  $('cntTodos').textContent = todos;
+  $('cntFilme').textContent = filme;
+  $('cntTela').textContent  = tela;
+  $('cntRafia').textContent = rafia;
+
+  document.querySelectorAll('#ftFilter .ft-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.ft === currentFTFilter);
+  });
+
+  /* Corte */
+  const pendentes = dadosFT.filter(r => !r.__corte).length;
+  const cortados  = dadosFT.filter(r =>  r.__corte).length;
+
+  $('cntCorteTodos').textContent    = todos;
+  $('cntCortePendente').textContent = pendentes;
+  $('cntCorteCortado').textContent  = cortados;
+
+  document.querySelectorAll('#ftCorteFilter .ft-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.corte === currentCorteFilter);
+  });
+
+  /* Coletado */
+  let sim = 0, nao = 0;
+  dadosFT.forEach(r => { if (isColetado(r)) sim++; else nao++; });
+
+  $('cntColSimFT').textContent   = sim;
+  $('cntColNaoFT').textContent   = nao;
+  $('cntColTodosFT').textContent = todos;
+
+  document.querySelectorAll('#coletadoFilterFT .ft-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.coletado === currentColetadoFilterFT);
+  });
+}
+
+$('ftFilter').addEventListener('click', e => {
+  const chip = e.target.closest('.ft-chip');
+  if (!chip) return;
+  currentFTFilter = chip.dataset.ft;
+  atualizarFTChips();
+  renderFT();
+});
+
+$('ftCorteFilter').addEventListener('click', e => {
+  const chip = e.target.closest('.ft-chip');
+  if (!chip) return;
+  currentCorteFilter = chip.dataset.corte;
+  atualizarFTChips();
+  renderFT();
+});
+
+$('coletadoFilterFT').addEventListener('click', e => {
+  const chip = e.target.closest('.ft-chip');
+  if (!chip) return;
+  currentColetadoFilterFT = chip.dataset.coletado;
+  atualizarFTChips();
+  renderFT();
+});
+
+function updateDateClearButtonFT() {
+  const tem = !!(dataInicioFT.value || dataFimFT.value);
+  btnClearDatesFT.classList.toggle('hidden', !tem);
+}
+
+function renderFT() {
+  updateDateClearButtonFT();
+  atualizarFTChips();
+
+  const q = norm($('searchFT').value);
+
+  const dtIni = dataInicioFT.value ? new Date(dataInicioFT.value + 'T00:00:00') : null;
+  const dtFim = dataFimFT.value   ? new Date(dataFimFT.value   + 'T23:59:59') : null;
+  const temFiltroData = !!(dtIni || dtFim);
+
+  const base = dadosFT.filter(r => {
+    if (currentFTFilter && r.__categoria !== currentFTFilter) return false;
+
+    if (currentCorteFilter === 'PENDENTE' && r.__corte) return false;
+    if (currentCorteFilter === 'CORTADO'  && !r.__corte) return false;
+
+    if (!passaFiltroColetado(r, currentColetadoFilterFT)) return false;
+
+    if (temFiltroData) {
+      const d = parseDateBR(r['DATA DO PV']);
+      if (!d) return false;
+      if (dtIni && d < dtIni) return false;
+      if (dtFim && d > dtFim) return false;
+    }
+    return true;
+  });
+
+  const lista = q
+    ? base.filter(r => COLUNAS_FT.some(c => norm(r[c.label]).includes(q)))
+    : base;
+
+  const tbody = tblFT.querySelector('tbody');
+  const totalCols = COLUNAS_FT.length + 6;
+
+  if (!lista.length) {
+    let msg;
+    if (currentColetadoFilterFT === 'NAO')
+      msg = 'Nenhum registro <b>pendente de coleta</b> com os filtros atuais. ✓';
+    else if (currentColetadoFilterFT === 'SIM')
+      msg = 'Nenhum registro <b>coletado</b> com os filtros atuais.';
+    else if (currentCorteFilter === 'PENDENTE')
+      msg = 'Nenhum registro <b>pendente de corte</b> com os filtros atuais.';
+    else if (currentCorteFilter === 'CORTADO')
+      msg = 'Nenhum registro <b>cortado</b> com os filtros atuais.';
+    else if (currentFTFilter)
+      msg = `Nenhum registro classificado como <b>${esc(currentFTFilter)}</b>.`;
+    else if (temFiltroData)
+      msg = 'Nenhum registro no intervalo de datas selecionado.';
+    else if (q)
+      msg = 'Nenhum registro corresponde à pesquisa.';
+    else
+      msg = 'Nenhum registro de Filme / Tela / Ráfia encontrado.';
+    tbody.innerHTML = `<tr><td colspan="${totalCols}" class="empty"><span class="empty-icon">🎞</span>${msg}</td></tr>`;
+  } else {
+    const html = [];
+    lista.forEach((r, i) => {
+      const checkedAttr = r.__impresso ? ' checked' : '';
+      const corteAttr = r.__corte ? ' checked' : '';
+      const rowCls = r.__corte ? ' class="row-corte"' : '';
+      const col = isColetado(r);
+      const badgeCls = col ? 'sim' : 'nao';
+      const badgeTxt = col ? 'SIM' : 'NÃO';
+
+      html.push(`<tr${rowCls}>`);
+      html.push(
+        `<td class="flag-cell">` +
+          `<input type="checkbox" class="flag-cb" data-id="${esc(r.__id)}"${checkedAttr} aria-label="Marcar como impresso">` +
+        `</td>`
+      );
+      html.push(
+        `<td class="corte-cell">` +
+          `<input type="checkbox" class="corte-cb" data-id="${esc(r.__id)}"${corteAttr} title="${r.__corte ? 'Desmarcar corte' : 'Marcar corte'}" aria-label="Marcar corte">` +
+        `</td>`
+      );
+      html.push(`<td class="idx">${i + 1}</td>`);
+      for (const c of COLUNAS_FT) {
+        const raw = r[c.label] ?? '';
+        const val = (c.label === 'CLIENTE') ? limparNomeCliente(raw) : raw;
+        let cls = '';
+        if (c.label === 'DESCRIÇÃO') cls = ' class="desc"';
+        else if (c.label === 'COMPRIMENTO') cls = ' class="comprimento-cell"';
+        else if (c.label === 'LARGURA') cls = ' class="largura-cell"';
+        html.push(`<td${cls} title="${esc(val)}">${esc(val)}</td>`);
+      }
+      html.push(
+        `<td class="rolos-cell">` +
+          `<input type="text" class="rolos-input" data-id="${esc(r.__id)}" value="${esc(r['QTDE ROLOS'] || '')}" placeholder="1" aria-label="Qtde de rolos">` +
+        `</td>`
+      );
+      html.push(
+        `<td class="coletado-cell">` +
+          `<span class="coletado-badge ${badgeCls}">${badgeTxt}</span>` +
+        `</td>`
+      );
+      html.push(
+        `<td class="act">` +
+          `<button class="row-btn" data-id="${esc(r.__id)}" title="Ver etiqueta" aria-label="Ver etiqueta">${ICON_ETIQUETA}</button>` +
+        `</td>`
+      );
+      html.push('</tr>');
+    });
+    tbody.innerHTML = html.join('');
+  }
+
+  $('countBadgeFT').textContent =
+    lista.length === base.length
+      ? `${base.length} registro${base.length === 1 ? '' : 's'}`
+      : `${lista.length} de ${base.length} registros`;
+}
+
+$('searchFT').addEventListener('input', renderFT);
+dataInicioFT.addEventListener('change', renderFT);
+dataFimFT.addEventListener('change', renderFT);
+btnClearDatesFT.addEventListener('click', () => {
+  dataInicioFT.value = '';
+  dataFimFT.value = '';
+  renderFT();
+});
+
+tblFT.querySelector('tbody').addEventListener('change', e => {
+  const cb = e.target.closest('.flag-cb');
+  if (cb) {
+    const r = dadosFT.find(x => x.__id === cb.dataset.id);
+    if (!r) return;
+    r.__impresso = cb.checked;
+    return;
+  }
+  const ccb = e.target.closest('.corte-cb');
+  if (ccb) {
+    const r = dadosFT.find(x => x.__id === ccb.dataset.id);
+    if (!r) return;
+    r.__corte = ccb.checked;
+    atualizarFTChips();
+    renderFT();
+  }
+});
+
+tblFT.querySelector('tbody').addEventListener('input', e => {
+  const inp = e.target.closest('.rolos-input');
+  if (!inp) return;
+  const r = dadosFT.find(x => x.__id === inp.dataset.id);
+  if (!r) return;
+  r['QTDE ROLOS'] = inp.value;
+});
+
+tblFT.querySelector('tbody').addEventListener('click', e => {
+  const btn = e.target.closest('.row-btn');
+  if (!btn) return;
+  abrirEtiquetaFT(btn.dataset.id);
+});
+
+/* =========================================================
+   12) ETIQUETA — helpers comuns
+   ========================================================= */
+function etqPV(v) {
+  if (v === '' || v == null) return '—';
+  const s = String(v).trim();
+  if (!s) return '—';
+  if (/^PV/i.test(s)) return s.toUpperCase();
+  return 'PV-' + s;
+}
+
+async function downloadLabelPNG(element, filename) {
+  document.activeElement?.blur?.();
+  await new Promise(r => setTimeout(r, 80));
+  const canvas = await html2canvas(element, {
+    scale: 3, backgroundColor: '#ffffff',
+    useCORS: true, allowTaint: false, logging: false,
+    imageTimeout: 12000,
+    onclone: () => new Promise(r => setTimeout(r, 80))
+  });
+  const dataUrl = canvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = dataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function bindDownloadButtons(rowRef) {
+  labelBox.querySelectorAll('.btn-download').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const page = btn.closest('.label-page');
+      const etqEl = page.querySelector('.etq');
+      const num = btn.dataset.num;
+      const tot = btn.dataset.total;
+      const original = btn.innerHTML;
+
+      const clienteAtual = sanitizeFile(limparNomeCliente(rowRef?.['CLIENTE']) || 'etiqueta');
+      const pvAtual = sanitizeFile(rowRef?.['PV'] || '');
+      const parts = ['etiqueta', clienteAtual];
+      if (pvAtual) parts.push(pvAtual);
+      parts.push(`${num}de${tot}`);
+      const filename = parts.join('_') + '.png';
+
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Gerando PNG...';
+
+      try {
+        await downloadLabelPNG(etqEl, filename);
+        btn.innerHTML = '✓ Baixado!';
+        setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 1400);
+      } catch (err) {
+        console.error('[Hidrogood] Falha ao gerar PNG:', err);
+        btn.innerHTML = '✕ Falhou — tente de novo';
+        setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2200);
+      }
+    });
+  });
+}
+
+labelBox.addEventListener('focusout', e => {
+  const el = e.target.closest('.etq [contenteditable="true"]');
+  if (!el) return;
+  const rowAtual = editandoRow || editandoRowFT;
+  if (!rowAtual) return;
+  const field = el.dataset.field;
+  if (!field) return;
+  let v = el.textContent.replace(/\u00a0/g, ' ').trim();
+  if (v === '—') v = '';
+  if (v !== rowAtual[field]) rowAtual[field] = v;
+}, true);
+
+labelBox.addEventListener('keydown', e => {
+  const el = e.target.closest('.etq [contenteditable="true"]');
+  if (!el) return;
+  if (e.key === 'Enter' && el.dataset.field !== 'OBSERVAÇÃO') {
+    e.preventDefault();
+    el.blur();
+  }
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    el.blur();
+  }
+});
+
+/* =========================================================
+   13) ETIQUETA — RECOLHIMENTO
+   ========================================================= */
+function etqComprimento(v) {
+  if (v === '' || v == null) return '—';
+  const s = String(v).trim();
+  if (!s) return '—';
+  if (/M$/i.test(s)) return s.toUpperCase();
+  if (/^[\d.,\s]+$/.test(s)) return s + 'M';
+  return s;
+}
+function etqFuracao(v) {
+  if (v === '' || v == null) return '—';
+  const s = String(v).trim();
+  if (!s) return '—';
+  if (/[A-Za-z]/.test(s)) return s.toUpperCase();
+  return s + ' ENCAIXES';
+}
+function etqDiametro(v) {
+  if (v === '' || v == null) return '—';
+  const s = String(v).trim();
+  return s || '—';
+}
+
+function calcTotalEtiquetas(r) {
+  const raw = String(r['QTDE AMARRADOS'] ?? '').trim();
+  const n = parseFloat(raw.replace(',', '.'));
+  if (!isFinite(n) || n <= 0) return 1;
+  return Math.max(1, Math.ceil(n));
+}
+
+function buildEtiquetaHTML(r, num, total) {
+  const cliente   = limparNomeCliente((r['CLIENTE'] ?? '').trim()) || '—';
+  const descricao = (r['DESCRIÇÃO'] ?? '').trim() || '—';
+  const comp      = etqComprimento(r['COMPRIMENTO']);
+  const furacao   = etqFuracao(r['FURAÇÃO']);
+  const diametro  = etqDiametro(r['DIÂMETRO']);
+  const obs       = (r['OBSERVAÇÃO'] ?? '').trim();
+  const pv        = etqPV(r['PV']);
+
+  const ce = 'contenteditable="true" spellcheck="false"';
+
+  return `
+    <div class="etq">
+      <div class="etq-head">
+        <div class="etq-logo-box">
+          <img src="${esc(ETQ_LOGO_SRC)}" alt="Hidrogood" data-logo
+               onerror="this.onerror=null;this.src='${LOGO_FALLBACK_SVG}';">
+        </div>
+        <div class="etq-company">
+          <div class="etq-company-name">${esc(ETQ_EMPRESA.nome)}</div>
+          <div class="etq-company-info">
+            <span>${esc(ETQ_EMPRESA.cnpj)}</span>
+            <span>${esc(ETQ_EMPRESA.fone)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="etq-client" ${ce} data-field="CLIENTE">${esc(cliente)}</div>
+      <div class="etq-desc" ${ce} data-field="DESCRIÇÃO">${esc(descricao)}</div>
+
+      <div class="etq-row3">
+        <span ${ce} data-field="COMPRIMENTO">${esc(comp)}</span>
+        <span ${ce} data-field="FURAÇÃO">${esc(furacao)}</span>
+        <span ${ce} data-field="DIÂMETRO">${esc(diametro)}</span>
+      </div>
+
+      <div class="etq-obs" ${ce} data-field="OBSERVAÇÃO">${obs ? esc(obs) : '&nbsp;'}</div>
+
+      <div class="etq-foot">
+        <span class="qty">
+          <span class="seq">
+            <b>${num}</b>
+            <i>DE</i>
+            <b>${total}</b>
+          </span>
+        </span>
+        <span class="pv" ${ce} data-field="PV">${esc(pv)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function buildLabelPage(r, num, total) {
+  return `
+    <div class="label-page" data-index="${num}" data-total="${total}">
+      ${buildEtiquetaHTML(r, num, total)}
+      <div class="label-actions">
+        <button class="btn-download" type="button" data-num="${num}" data-total="${total}">
+          ⬇ Baixar PNG · ${num}/${total}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function abrirEtiqueta(id) {
+  const r = dadosRec.find(x => x.__id === id);
+  if (!r) return;
+
+  editandoRow = r;
+  editandoRowFT = null;
+
+  const total = calcTotalEtiquetas(r);
+  const pages = [];
+  for (let n = 1; n <= total; n++) pages.push(buildLabelPage(r, n, total));
+  labelBox.innerHTML = pages.join('');
+
+  bindDownloadButtons(r);
+
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  $('btnCloseFoot').focus();
+}
+
+/* =========================================================
+   14) ETIQUETA — FILME / TELA
+   ========================================================= */
+function calcTotalEtiquetasFT(r) {
+  const rawRolos = String(r['QTDE ROLOS'] ?? '').trim();
+  if (rawRolos) {
+    const n = parseFloat(rawRolos.replace(',', '.'));
+    if (isFinite(n) && n > 0) return Math.max(1, Math.ceil(n));
+  }
+  return 1;
+}
+
+function buildEtiquetaFTHTML(r, num, total) {
+  const cliente   = limparNomeCliente((r['CLIENTE'] ?? '').trim()) || '—';
+  const descricao = (r['DESCRIÇÃO'] ?? '').trim() || '—';
+  const largura   = (r['LARGURA'] ?? '').trim() || '—';
+  const comp      = (r['COMPRIMENTO'] ?? '').trim() || '—';
+  const obs       = (r['OBSERVAÇÃO'] ?? '').trim();
+  const pv        = etqPV(r['PV']);
+
+  const ce = 'contenteditable="true" spellcheck="false"';
+
+  return `
+    <div class="etq">
+      <div class="etq-head">
+        <div class="etq-logo-box">
+          <img src="${esc(ETQ_LOGO_SRC)}" alt="Hidrogood" data-logo
+               onerror="this.onerror=null;this.src='${LOGO_FALLBACK_SVG}';">
+        </div>
+        <div class="etq-company">
+          <div class="etq-company-name">${esc(ETQ_EMPRESA.nome)}</div>
+          <div class="etq-company-info">
+            <span>${esc(ETQ_EMPRESA.cnpj)}</span>
+            <span>${esc(ETQ_EMPRESA.fone)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="etq-client" ${ce} data-field="CLIENTE">${esc(cliente)}</div>
+      <div class="etq-desc" ${ce} data-field="DESCRIÇÃO">${esc(descricao)}</div>
+
+      <div class="etq-row3 etq-row3-ft">
+        <span class="etq-medida">
+          <span class="etq-lbl">LARGURA:</span>
+          <span class="etq-vlr" ${ce} data-field="LARGURA">${esc(largura)}</span>
+        </span>
+        <span class="etq-medida">
+          <span class="etq-lbl">COMPRIMENTO:</span>
+          <span class="etq-vlr" ${ce} data-field="COMPRIMENTO">${esc(comp)}</span>
+        </span>
+      </div>
+
+      <div class="etq-obs" ${ce} data-field="OBSERVAÇÃO">${obs ? esc(obs) : '&nbsp;'}</div>
+
+      <div class="etq-foot">
+        <span class="qty">
+          <span class="seq">
+            <b>${num}</b>
+            <i>DE</i>
+            <b>${total}</b>
+          </span>
+        </span>
+        <span class="pv" ${ce} data-field="PV">${esc(pv)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function buildLabelPageFT(r, num, total) {
+  return `
+    <div class="label-page" data-index="${num}" data-total="${total}">
+      ${buildEtiquetaFTHTML(r, num, total)}
+      <div class="label-actions">
+        <button class="btn-download" type="button" data-num="${num}" data-total="${total}">
+          ⬇ Baixar PNG · ${num}/${total}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function abrirEtiquetaFT(id) {
+  const r = dadosFT.find(x => x.__id === id);
+  if (!r) return;
+
+  editandoRowFT = r;
+  editandoRow = null;
+
+  const total = calcTotalEtiquetasFT(r);
+  const pages = [];
+  for (let n = 1; n <= total; n++) pages.push(buildLabelPageFT(r, n, total));
+  labelBox.innerHTML = pages.join('');
+
+  bindDownloadButtons(r);
+
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  $('btnCloseFoot').focus();
+}
+
+/* =========================================================
+   15) FECHAR MODAL
+   ========================================================= */
+function fecharEtiqueta() {
+  overlay.classList.add('hidden');
+  document.body.style.overflow = '';
+  labelBox.innerHTML = '';
+
+  const tinhaRec = !!editandoRow;
+  const tinhaFT  = !!editandoRowFT;
+  editandoRow = null;
+  editandoRowFT = null;
+
+  if (tinhaRec) renderRec();
+  if (tinhaFT)  renderFT();
+}
+
+$('modalClose').addEventListener('click', fecharEtiqueta);
+$('btnCloseFoot').addEventListener('click', fecharEtiqueta);
+overlay.addEventListener('click', e => { if (e.target === overlay) fecharEtiqueta(); });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !overlay.classList.contains('hidden')) fecharEtiqueta();
+});
+
+$('btnPrint').addEventListener('click', () => {
+  document.activeElement?.blur?.();
+  setTimeout(() => window.print(), 100);
+});
+
+/* =========================================================
+   16) EXPORTAR
+   ========================================================= */
+$('btnExport').addEventListener('click', () => {
+  if (!dadosRec.length) return;
+
+  const dtIni = dataInicio.value ? new Date(dataInicio.value + 'T00:00:00') : null;
+  const dtFim = dataFim.value   ? new Date(dataFim.value   + 'T23:59:59') : null;
+  const temFiltroData = !!(dtIni || dtFim);
+
+  const base = dadosRec.filter(r => {
+    if (currentTabRec === 'inicio' ? r.__impresso : !r.__impresso) return false;
+    if (!passaFiltroColetado(r, currentColetadoFilterRec)) return false;
+    if (temFiltroData) {
+      const d = parseDateBR(r['DATA DO PV']);
+      if (!d) return false;
+      if (dtIni && d < dtIni) return false;
+      if (dtFim && d > dtFim) return false;
+    }
+    return true;
+  });
+
+  if (!base.length) return;
+
+  const headers = ['IMPRESSO?', 'COLETADO?'].concat(COLUNAS_RECOLHIMENTO.map(c => c.label));
+  const aoa = [headers];
+  base.forEach(r => {
+    const row = [r.__impresso ? 'SIM' : 'NÃO', isColetado(r) ? 'SIM' : 'NÃO'];
+    COLUNAS_RECOLHIMENTO.forEach(c => {
+      const raw = r[c.label];
+      row.push(c.label === 'CLIENTE' ? limparNomeCliente(raw) : raw);
+    });
+    aoa.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = headers.map(h => ({ wch: Math.max(12, h.length + 6) }));
+
+  const wb = XLSX.utils.book_new();
+  const sheetName = currentTabRec === 'inicio' ? 'Início' : 'Impressos';
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  XLSX.writeFile(wb, `recolhimento_${currentTabRec}_${new Date().toISOString().slice(0,10)}.xlsx`);
+});
+
+$('btnExportFT').addEventListener('click', () => {
+  if (!dadosFT.length) return;
+
+  const dtIni = dataInicioFT.value ? new Date(dataInicioFT.value + 'T00:00:00') : null;
+  const dtFim = dataFimFT.value   ? new Date(dataFimFT.value   + 'T23:59:59') : null;
+  const temFiltroData = !!(dtIni || dtFim);
+
+  const base = dadosFT.filter(r => {
+    if (currentFTFilter && r.__categoria !== currentFTFilter) return false;
+    if (currentCorteFilter === 'PENDENTE' && r.__corte) return false;
+    if (currentCorteFilter === 'CORTADO'  && !r.__corte) return false;
+    if (!passaFiltroColetado(r, currentColetadoFilterFT)) return false;
+    if (temFiltroData) {
+      const d = parseDateBR(r['DATA DO PV']);
+      if (!d) return false;
+      if (dtIni && d < dtIni) return false;
+      if (dtFim && d > dtFim) return false;
+    }
+    return true;
+  });
+
+  if (!base.length) return;
+
+  const headers = ['IMPRESSO', 'CORTE', 'COLETADO?'].concat(COLUNAS_FT.map(c => c.label)).concat(['QTDE ROLOS']);
+  const aoa = [headers];
+  base.forEach(r => {
+    const row = [
+      r.__impresso ? 'SIM' : 'NÃO',
+      r.__corte ? 'SIM' : 'NÃO',
+      isColetado(r) ? 'SIM' : 'NÃO'
+    ];
+    COLUNAS_FT.forEach(c => {
+      const raw = r[c.label];
+      row.push(c.label === 'CLIENTE' ? limparNomeCliente(raw) : raw);
+    });
+    row.push(r['QTDE ROLOS'] || '');
+    aoa.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = headers.map(h => ({ wch: Math.max(12, h.length + 6) }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Filme-Tela');
+  XLSX.writeFile(wb, `filme_tela_${new Date().toISOString().slice(0,10)}.xlsx`);
+});
+</script>
+</body>
+</html>
