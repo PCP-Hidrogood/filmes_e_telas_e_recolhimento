@@ -1325,7 +1325,9 @@ function parseDbNumber(value) {
 }
 
 function itemDbKey(r, origem) {
-  return [origem, r['PV'] || '', r['CÓD'] || '', r['DESCRIÇÃO'] || '']
+  /* O número da linha de origem diferencia itens repetidos da mesma PV. */
+  const linha = r.__sourceRow == null ? '' : String(r.__sourceRow);
+  return [origem, linha, r['PV'] || '', r['CÓD'] || '', r['DESCRIÇÃO'] || '']
     .map(v => String(v ?? '').trim()).join('|');
 }
 
@@ -1377,10 +1379,12 @@ async function salvarBasePrincipalSupabase(nomeArquivo) {
       abas: workbook?.SheetNames || [],
       origem_script: 'gestao-etiquetas'
     });
-    const payload = [
+    const payloadBruto = [
       ...dadosRec.map(r => { r.__dbKey = itemDbKey(r, 'RECOLHIMENTO'); return itemDbPayload(r, 'RECOLHIMENTO'); }),
       ...dadosFT.map(r => { r.__dbKey = itemDbKey(r, 'FILME_TELA'); return itemDbPayload(r, 'FILME_TELA'); })
     ];
+    /* Proteção adicional contra duplicatas no mesmo POST/upsert. */
+    const payload = [...new Map(payloadBruto.map(row => [row.item_key, row])).values()];
     for (let i = 0; i < payload.length; i += 500) {
       await supabaseRequest('production_items?on_conflict=item_key', {
         method: 'POST',
@@ -1837,6 +1841,7 @@ function processarPlanilha(nomeAba, nomeArquivo) {
         obj[c.label] = val;
       }
       obj['QTDE AMARRADOS'] = calcAmarrados(descricaoBruta, qtdeFinal);
+      obj.__sourceRow = i;
       obj.__key = chave;
       obj.__id  = 'rec' + dadosRec.length + '_' + chave.slice(0, 6);
       obj.__impresso = false;
@@ -1867,6 +1872,7 @@ function processarPlanilha(nomeAba, nomeArquivo) {
       /* CORRIGIDO: agora detecta "3 x FILMES ..." também */
       obj['QTDE ROLOS'] = extrairQtdeRolos(obsBruta, descricaoBruta);
 
+      obj.__sourceRow = i;
       obj.__categoria = matches[0];
       obj.__matches = matches;
       obj.__key = chave;
