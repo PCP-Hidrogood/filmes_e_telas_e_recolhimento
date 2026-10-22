@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HIDROGOOD_SUPABASE_V5_AUTO_LOAD_BASE_2026-10-22 -->
+<!-- HIDROGOOD_SUPABASE_V6_RESTORE_LEGACY_MARKS_2026-10-22 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1533,6 +1533,35 @@ async function carregarBasePrincipalSupabase() {
     const texto = v => v == null ? '' : String(v);
     const editados = (item) => item.campos_editados && typeof item.campos_editados === 'object'
       ? item.campos_editados : {};
+    const identidade = item => [item.origem, item.pedido, item.codigo_item, item.descricao_item]
+      .map(texto).join('|').trim();
+    const consumirMarcacao = (fila, item) => {
+      const id = identidade(item);
+      const lista = fila.get(id) || [];
+      if (!lista.length) return false;
+      lista.shift();
+      return true;
+    };
+
+    /* Recupera marcações feitas antes de uma nova importação. O item_key
+       antigo continha a linha da planilha; por isso usamos uma identidade
+       estável quando a posição das linhas mudou. */
+    const [marcadosImpresso, marcadosCorte] = await Promise.all([
+      supabaseRequest('production_items?impresso=eq.true&select=origem,pedido,codigo_item,descricao_item&limit=10000', { method: 'GET' }),
+      supabaseRequest('production_items?cortado=eq.true&select=origem,pedido,codigo_item,descricao_item&limit=10000', { method: 'GET' })
+    ]);
+    const filaImpresso = new Map();
+    const filaCorte = new Map();
+    (marcadosImpresso || []).forEach(item => {
+      const id = identidade(item);
+      if (!filaImpresso.has(id)) filaImpresso.set(id, []);
+      filaImpresso.get(id).push(item);
+    });
+    (marcadosCorte || []).forEach(item => {
+      const id = identidade(item);
+      if (!filaCorte.has(id)) filaCorte.set(id, []);
+      filaCorte.get(id).push(item);
+    });
 
     dadosRec = [];
     dadosFT = [];
@@ -1555,8 +1584,8 @@ async function carregarBasePrincipalSupabase() {
         __dbKey: item.item_key,
         __key: texto(item.descricao_item).toLowerCase().trim(),
         __sourceRow: index,
-        __impresso: !!item.impresso,
-        __corte: !!item.cortado,
+        __impresso: !!item.impresso || consumirMarcacao(filaImpresso, item),
+        __corte: !!item.cortado || consumirMarcacao(filaCorte, item),
         __camposEditados: editados(item)
       };
       Object.assign(obj, obj.__camposEditados);
