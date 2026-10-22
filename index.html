@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HIDROGOOD_SUPABASE_V7_PRESERVE_HISTORY_ON_IMPORT_2026-10-22 -->
+<!-- HIDROGOOD_SUPABASE_V8_MERGE_ALL_HISTORY_2026-10-22 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1507,18 +1507,18 @@ async function restaurarEstadosSupabase() {
       const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
       const exato = porKey.get(r.__dbKey);
       const lista = historico.get(identidadeTela(r, origem)) || [];
-      /* O exato é preferido; se a linha mudou, usa um registro histórico
-         com a mesma identidade estável. */
-      const salvo = exato || lista.find(x => x.impresso || x.cortado ||
-        (x.qtde_rolos !== null && x.qtde_rolos !== undefined) ||
-        (x.campos_editados && Object.keys(x.campos_editados).length));
-      if (!salvo) return;
-      r.__impresso = !!salvo.impresso;
-      r.__corte = !!salvo.cortado;
-      if (salvo.qtde_rolos !== null && salvo.qtde_rolos !== undefined) {
-        r['QTDE ROLOS'] = String(salvo.qtde_rolos);
-      }
-      r.__camposEditados = salvo.campos_editados || {};
+      const candidatos = exato ? [exato, ...lista.filter(x => x !== exato)] : lista;
+      if (!candidatos.length) return;
+
+      /* Nunca deixe um registro novo com false apagar um true histórico. */
+      r.__impresso = candidatos.some(x => !!x.impresso);
+      r.__corte = candidatos.some(x => !!x.cortado);
+
+      const comRolos = candidatos.find(x => x.qtde_rolos !== null && x.qtde_rolos !== undefined);
+      if (comRolos) r['QTDE ROLOS'] = String(comRolos.qtde_rolos);
+
+      const comEdicao = candidatos.find(x => x.campos_editados && Object.keys(x.campos_editados).length);
+      r.__camposEditados = comEdicao?.campos_editados || {};
       Object.assign(r, r.__camposEditados);
     });
 
