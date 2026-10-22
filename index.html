@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HIDROGOOD_SUPABASE_V10_MASTER_INCREMENTAL_DB_2026-10-22 -->
+<!-- HIDROGOOD_SUPABASE_V11_INCREMENTAL_MERGE_2026-10-22 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1326,9 +1326,11 @@ function parseDbNumber(value) {
 }
 
 function itemDbKey(r, origem) {
-  /* Chave canônica: a posição da linha nunca participa do identificador. */
-  return [origem, r['PV'] || '', r['CÓD'] || '', r['DESCRIÇÃO'] || '']
-    .map(v => String(v ?? '').trim()).join('|');
+  /* Identidade do item: não usa a posição da linha nem quantidades/estados.
+     Dimensões e características diferenciam itens da mesma PV. */
+  return [origem, r['PV'], r['CÓD'], r['DESCRIÇÃO'], r['COMPRIMENTO'],
+    r['LARGURA'], r['FURAÇÃO'], r['DIÂMETRO'], r['OBSERVAÇÃO']]
+    .map(v => String(v ?? '').trim().toUpperCase()).join('|');
 }
 
 function itemDbPayload(r, origem) {
@@ -1556,7 +1558,8 @@ async function carregarBasePrincipalSupabase() {
     }
 
     const texto = v => v == null ? '' : String(v);
-    const identidade = item => [item.origem, item.pedido, item.codigo_item, item.descricao_item]
+    const identidade = item => [item.origem, item.pedido, item.codigo_item, item.descricao_item,
+      item.comprimento, item.largura, item.furacao, item.diametro, item.observacao]
       .map(texto).join('|').trim();
     const editados = item => item.campos_editados && typeof item.campos_editados === 'object'
       ? item.campos_editados : {};
@@ -1596,7 +1599,9 @@ async function carregarBasePrincipalSupabase() {
         'QTDE AMARRADOS': texto(item.qtde_amarrados),
         'LARGURA': texto(item.largura),
         'QTDE ROLOS': texto(item.qtde_rolos),
-        __dbKey: itemDbKey({ 'PV': item.pedido, 'CÓD': item.codigo_item, 'DESCRIÇÃO': item.descricao_item }, item.origem),
+        __dbKey: itemDbKey({ 'PV': item.pedido, 'CÓD': item.codigo_item, 'DESCRIÇÃO': item.descricao_item,
+          'COMPRIMENTO': item.comprimento, 'LARGURA': item.largura, 'FURAÇÃO': item.furacao,
+          'DIÂMETRO': item.diametro, 'OBSERVAÇÃO': item.observacao }, item.origem),
         __key: texto(item.descricao_item).toLowerCase().trim(),
         __sourceRow: index,
         __impresso: !!item.impresso,
@@ -1999,8 +2004,8 @@ function processarPlanilha(nomeAba, nomeArquivo) {
     });
   });
 
-  dadosRec = [];
-  dadosFT = [];
+  const novosRec = [];
+  const novosFT = [];
 
   const idxDescRec = mapaRec['DESCRIÇÃO'];
   const idxQtdeRec = mapaRec['QTDE'];
@@ -2045,7 +2050,7 @@ function processarPlanilha(nomeAba, nomeArquivo) {
       obj.__key = chave;
       obj.__id  = 'rec' + dadosRec.length + '_' + chave.slice(0, 6);
       obj.__impresso = false;
-      dadosRec.push(obj);
+      novosRec.push(obj);
     }
 
     /* ---------- FILME / TELA / RÁFIA ---------- */
@@ -2079,9 +2084,37 @@ function processarPlanilha(nomeAba, nomeArquivo) {
       obj.__id  = 'ft' + dadosFT.length + '_' + chave.slice(0, 6);
       obj.__impresso = false;
       obj.__corte = false;
-      dadosFT.push(obj);
+      novosFT.push(obj);
     }
   }
+
+  function mesclarItens(base, novos, origem) {
+    const mapa = new Map(base.map(r => [itemDbKey(r, origem), r]));
+    novos.forEach(novo => {
+      const chave = itemDbKey(novo, origem);
+      const atual = mapa.get(chave);
+      if (!atual) {
+        novo.__dbKey = chave;
+        mapa.set(chave, novo);
+        return;
+      }
+      const impresso = !!atual.__impresso;
+      const corte = !!atual.__corte;
+      const rolos = atual['QTDE ROLOS'];
+      const editados = atual.__camposEditados || {};
+      Object.assign(atual, novo);
+      atual.__dbKey = chave;
+      atual.__impresso = impresso || !!novo.__impresso;
+      atual.__corte = corte || !!novo.__corte;
+      if (rolos != null && rolos !== '') atual['QTDE ROLOS'] = rolos;
+      atual.__camposEditados = editados;
+      Object.assign(atual, editados);
+    });
+    return [...mapa.values()];
+  }
+
+  dadosRec = mesclarItens(dadosRec, novosRec, 'RECOLHIMENTO');
+  dadosFT = mesclarItens(dadosFT, novosFT, 'FILME_TELA');
 
   [...dadosRec, ...dadosFT].forEach(r => {
     const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
