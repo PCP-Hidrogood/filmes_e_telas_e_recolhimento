@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HIDROGOOD_SUPABASE_V8_MERGE_ALL_HISTORY_2026-10-22 -->
+<!-- HIDROGOOD_SUPABASE_V9_PRESERVE_IN_MEMORY_IMPORT_2026-10-22 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1998,6 +1998,23 @@ function processarPlanilha(nomeAba, nomeArquivo) {
     return;
   }
 
+  /* Guarda o histórico que já está na tela antes de substituir as linhas
+     pela nova planilha. */
+  const identidadeLocal = (r, origem) => [origem, r['PV'], r['CÓD'], r['DESCRIÇÃO']]
+    .map(v => v == null ? '' : String(v)).join('|').trim();
+  const estadoAntes = new Map();
+  [...dadosRec, ...dadosFT].forEach(r => {
+    const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
+    const id = identidadeLocal(r, origem);
+    const anterior = estadoAntes.get(id) || { impresso: false, corte: false, rolos: null, editados: {} };
+    estadoAntes.set(id, {
+      impresso: anterior.impresso || !!r.__impresso,
+      corte: anterior.corte || !!r.__corte,
+      rolos: r['QTDE ROLOS'] || anterior.rolos,
+      editados: { ...anterior.editados, ...(r.__camposEditados || {}) }
+    });
+  });
+
   dadosRec = [];
   dadosFT = [];
 
@@ -2081,6 +2098,17 @@ function processarPlanilha(nomeAba, nomeArquivo) {
       dadosFT.push(obj);
     }
   }
+
+  [...dadosRec, ...dadosFT].forEach(r => {
+    const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
+    const estado = estadoAntes.get(identidadeLocal(r, origem));
+    if (!estado) return;
+    r.__impresso = estado.impresso;
+    r.__corte = estado.corte;
+    if (estado.rolos != null && estado.rolos !== '') r['QTDE ROLOS'] = estado.rolos;
+    r.__camposEditados = estado.editados;
+    Object.assign(r, estado.editados);
+  });
 
   const totalRec = dadosRec.length;
   const totalFT  = dadosFT.length;
