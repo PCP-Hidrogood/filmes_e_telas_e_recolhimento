@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HIDROGOOD_SUPABASE_V9_PRESERVE_IN_MEMORY_IMPORT_2026-10-22 -->
+<!-- HIDROGOOD_SUPABASE_V10_MASTER_INCREMENTAL_DB_2026-10-22 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1326,9 +1326,8 @@ function parseDbNumber(value) {
 }
 
 function itemDbKey(r, origem) {
-  /* O número da linha de origem diferencia itens repetidos da mesma PV. */
-  const linha = r.__sourceRow == null ? '' : String(r.__sourceRow);
-  return [origem, linha, r['PV'] || '', r['CÓD'] || '', r['DESCRIÇÃO'] || '']
+  /* Chave canônica: a posição da linha nunca participa do identificador. */
+  return [origem, r['PV'] || '', r['CÓD'] || '', r['DESCRIÇÃO'] || '']
     .map(v => String(v ?? '').trim()).join('|');
 }
 
@@ -1409,11 +1408,25 @@ async function salvarBasePrincipalSupabase(nomeArquivo) {
 
 async function salvarColetadosSupabase(fileName, keys) {
   try {
-    currentCollectedBatchId = await criarLoteSupabase('COLETADOS', fileName, keys.size, {
+    const existentes = await supabaseRequest(
+      'production_collected_orders?select=chave_normalizada&limit=10000',
+      { method: 'GET' }
+    );
+    const existentesSet = new Set((existentes || []).map(x => x.chave_normalizada).filter(Boolean));
+    const novos = [...keys].filter(k => !existentesSet.has(k));
+
+    if (!novos.length) {
+      setStatusColetados((statusColetadosEl.textContent || '') + ' · nenhuma chave nova', 'ok');
+      console.info('[Supabase] COLETADOS: nenhuma chave nova para inserir.');
+      return;
+    }
+
+    currentCollectedBatchId = await criarLoteSupabase('COLETADOS', fileName, novos.length, {
       chave: 'NÚMERO_DO_PEDIDO',
+      importacao_incremental: true,
       origem_script: 'gestao-etiquetas'
     });
-    const rows = [...keys].map(k => ({
+    const rows = novos.map(k => ({
       numero_pedido: k,
       chave_normalizada: k,
       import_batch_id: currentCollectedBatchId,
@@ -1426,11 +1439,12 @@ async function salvarColetadosSupabase(fileName, keys) {
         body: JSON.stringify(rows.slice(i, i + 500))
       });
     }
-    await registrarEventoSupabase(null, 'IMPORTACAO_COLETADOS', null, null, {
-      batch_id: currentCollectedBatchId, arquivo: fileName || '', total: keys.size
+    await registrarEventoSupabase(null, 'IMPORTACAO_COLETADOS_INCREMENTAL', null, null, {
+      batch_id: currentCollectedBatchId, arquivo: fileName || '', novos: novos.length, recebidos: keys.size
     });
+    coletadosSet = new Set([...existentesSet, ...novos]);
     supabaseOnline = true;
-    setStatusColetados((statusColetadosEl.textContent || '') + ' · salvo no Supabase', 'ok');
+    setStatusColetados((statusColetadosEl.textContent || '') + ` · ${novos.length} novos salvos`, 'ok');
   } catch (err) {
     supabaseOnline = false;
     console.error('[Supabase] Falha ao salvar COLETADOS:', err);
@@ -1532,59 +1546,41 @@ async function restaurarEstadosSupabase() {
 
 async function carregarBasePrincipalSupabase() {
   try {
-    const lotes = await supabaseRequest(
-      'production_import_batches?source_name=eq.BASE_PRINCIPAL&select=id,file_name,imported_at&order=imported_at.desc&limit=1',
+    const itensBrutos = await supabaseRequest(
+      'production_items?ativo=eq.true&select=item_key,origem,data_op,pedido,cliente,comprimento,largura,qtde_barras,qtde_amarrados,qtde_rolos,observacao,diametro,furacao,codigo_item,descricao_item,impresso,cortado,campos_editados,categoria&limit=10000',
       { method: 'GET' }
     );
-    const lote = lotes?.[0]?.id;
-    if (!lote) {
-      console.info('[Supabase] Nenhum lote BASE_PRINCIPAL encontrado.');
+    if (!Array.isArray(itensBrutos) || !itensBrutos.length) {
+      console.info('[Supabase] Banco mestre sem itens.');
       return;
     }
 
-    const itens = await supabaseRequest(
-      'production_items?last_import_batch_id=eq.' + encodeURIComponent(lote) +
-      '&select=item_key,origem,data_op,pedido,cliente,comprimento,largura,qtde_barras,qtde_amarrados,qtde_rolos,observacao,diametro,furacao,codigo_item,descricao_item,impresso,cortado,campos_editados,categoria&limit=10000',
-      { method: 'GET' }
-    );
-    if (!Array.isArray(itens) || !itens.length) return;
-
     const texto = v => v == null ? '' : String(v);
-    const editados = (item) => item.campos_editados && typeof item.campos_editados === 'object'
-      ? item.campos_editados : {};
     const identidade = item => [item.origem, item.pedido, item.codigo_item, item.descricao_item]
       .map(texto).join('|').trim();
-    const consumirMarcacao = (fila, item) => {
-      const id = identidade(item);
-      const lista = fila.get(id) || [];
-      if (!lista.length) return false;
-      lista.shift();
-      return true;
-    };
+    const editados = item => item.campos_editados && typeof item.campos_editados === 'object'
+      ? item.campos_editados : {};
+    const mestres = new Map();
 
-    /* Recupera marcações feitas antes de uma nova importação. O item_key
-       antigo continha a linha da planilha; por isso usamos uma identidade
-       estável quando a posição das linhas mudou. */
-    const [marcadosImpresso, marcadosCorte] = await Promise.all([
-      supabaseRequest('production_items?impresso=eq.true&select=origem,pedido,codigo_item,descricao_item&limit=10000', { method: 'GET' }),
-      supabaseRequest('production_items?cortado=eq.true&select=origem,pedido,codigo_item,descricao_item&limit=10000', { method: 'GET' })
-    ]);
-    const filaImpresso = new Map();
-    const filaCorte = new Map();
-    (marcadosImpresso || []).forEach(item => {
+    /* Consolida registros antigos/duplicados. TRUE nunca é perdido. */
+    itensBrutos.forEach(item => {
+      if (!item.origem) return;
       const id = identidade(item);
-      if (!filaImpresso.has(id)) filaImpresso.set(id, []);
-      filaImpresso.get(id).push(item);
-    });
-    (marcadosCorte || []).forEach(item => {
-      const id = identidade(item);
-      if (!filaCorte.has(id)) filaCorte.set(id, []);
-      filaCorte.get(id).push(item);
+      const anterior = mestres.get(id);
+      if (!anterior) {
+        mestres.set(id, { ...item, campos_editados: { ...editados(item) } });
+        return;
+      }
+      anterior.impresso = !!anterior.impresso || !!item.impresso;
+      anterior.cortado = !!anterior.cortado || !!item.cortado;
+      anterior.campos_editados = { ...editados(anterior), ...editados(item) };
+      if ((anterior.qtde_rolos == null || anterior.qtde_rolos === '') && item.qtde_rolos != null) anterior.qtde_rolos = item.qtde_rolos;
+      if (item.last_import_batch_id) anterior.last_import_batch_id = item.last_import_batch_id;
     });
 
     dadosRec = [];
     dadosFT = [];
-    itens.forEach((item, index) => {
+    [...mestres.values()].forEach((item, index) => {
       const isRec = item.origem === 'RECOLHIMENTO';
       const obj = {
         'DATA DO PV': texto(item.data_op),
@@ -1600,11 +1596,11 @@ async function carregarBasePrincipalSupabase() {
         'QTDE AMARRADOS': texto(item.qtde_amarrados),
         'LARGURA': texto(item.largura),
         'QTDE ROLOS': texto(item.qtde_rolos),
-        __dbKey: item.item_key,
+        __dbKey: itemDbKey({ 'PV': item.pedido, 'CÓD': item.codigo_item, 'DESCRIÇÃO': item.descricao_item }, item.origem),
         __key: texto(item.descricao_item).toLowerCase().trim(),
         __sourceRow: index,
-        __impresso: !!item.impresso || consumirMarcacao(filaImpresso, item),
-        __corte: !!item.cortado || consumirMarcacao(filaCorte, item),
+        __impresso: !!item.impresso,
+        __corte: !!item.cortado,
         __camposEditados: editados(item)
       };
       Object.assign(obj, obj.__camposEditados);
@@ -1624,47 +1620,35 @@ async function carregarBasePrincipalSupabase() {
       currentTabRec = 'inicio';
       atualizarSubTabsAtivas();
       montarCabecalhoRec();
-    } else {
-      cardRec.classList.add('hidden');
-    }
+    } else cardRec.classList.add('hidden');
     if (dadosFT.length) {
       cardFT.classList.remove('hidden');
       atualizarFTChips();
       montarCabecalhoFT();
-    } else {
-      cardFT.classList.add('hidden');
-    }
+    } else cardFT.classList.add('hidden');
     renderRec();
     renderFT();
     setMainTab(dadosRec.length ? 'recolhimento' : 'filmeTela');
-    console.info('[Supabase] Base principal restaurada:', itens.length, 'itens');
+    console.info('[Supabase] Banco mestre restaurado:', mestres.size, 'itens únicos de', itensBrutos.length, 'registros.');
   } catch (err) {
-    console.error('[Supabase] Falha ao carregar a base principal:', err);
+    console.error('[Supabase] Falha ao carregar o banco mestre:', err);
   }
 }
 
 async function carregarUltimosColetadosSupabase() {
   try {
-    const lotes = await supabaseRequest(
-      'production_import_batches?source_name=eq.COLETADOS&select=id&order=imported_at.desc&limit=1',
-      { method: 'GET' }
-    );
-    const lote = lotes?.[0]?.id;
-    if (!lote) return;
-
     const pedidos = await supabaseRequest(
-      'production_collected_orders?import_batch_id=eq.' + encodeURIComponent(lote) + '&select=chave_normalizada&limit=10000',
+      'production_collected_orders?select=chave_normalizada&limit=10000',
       { method: 'GET' }
     );
     coletadosSet = new Set((pedidos || []).map(x => x.chave_normalizada).filter(Boolean));
-    currentCollectedBatchId = lote;
     if (dadosRec.length || dadosFT.length) {
       renderRec();
       renderFT();
     }
-    console.info('[Supabase] Pedidos coletados restaurados:', coletadosSet.size);
+    console.info('[Supabase] Banco COLETADOS restaurado:', coletadosSet.size, 'chaves únicas.');
   } catch (err) {
-    console.error('[Supabase] Falha ao restaurar COLETADOS:', err);
+    console.error('[Supabase] Falha ao carregar COLETADOS:', err);
   }
 }
 
