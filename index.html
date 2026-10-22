@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HIDROGOOD_SUPABASE_V6_RESTORE_LEGACY_MARKS_2026-10-22 -->
+<!-- HIDROGOOD_SUPABASE_V7_PRESERVE_HISTORY_ON_IMPORT_2026-10-22 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1488,12 +1488,30 @@ async function restaurarEstadosSupabase() {
        chaves longas e caracteres especiais. Buscamos os itens persistidos
        e fazemos o cruzamento local pelo item_key. */
     const encontrados = await supabaseRequest(
-      'production_items?select=item_key,impresso,cortado,qtde_rolos,campos_editados&limit=10000',
+      'production_items?select=item_key,origem,pedido,codigo_item,descricao_item,impresso,cortado,qtde_rolos,campos_editados&limit=10000',
       { method: 'GET' }
     );
     const porKey = new Map((encontrados || []).map(x => [x.item_key, x]));
+    const identidadeDb = x => [x.origem, x.pedido, x.codigo_item, x.descricao_item]
+      .map(v => v == null ? '' : String(v)).join('|').trim();
+    const historico = new Map();
+    (encontrados || []).forEach(x => {
+      const id = identidadeDb(x);
+      const lista = historico.get(id) || [];
+      lista.push(x);
+      historico.set(id, lista);
+    });
+    const identidadeTela = (r, origem) => [origem, r['PV'], r['CÓD'], r['DESCRIÇÃO']]
+      .map(v => v == null ? '' : String(v)).join('|').trim();
     rows.forEach(r => {
-      const salvo = porKey.get(r.__dbKey);
+      const origem = dadosRec.includes(r) ? 'RECOLHIMENTO' : 'FILME_TELA';
+      const exato = porKey.get(r.__dbKey);
+      const lista = historico.get(identidadeTela(r, origem)) || [];
+      /* O exato é preferido; se a linha mudou, usa um registro histórico
+         com a mesma identidade estável. */
+      const salvo = exato || lista.find(x => x.impresso || x.cortado ||
+        (x.qtde_rolos !== null && x.qtde_rolos !== undefined) ||
+        (x.campos_editados && Object.keys(x.campos_editados).length));
       if (!salvo) return;
       r.__impresso = !!salvo.impresso;
       r.__corte = !!salvo.cortado;
@@ -1501,6 +1519,7 @@ async function restaurarEstadosSupabase() {
         r['QTDE ROLOS'] = String(salvo.qtde_rolos);
       }
       r.__camposEditados = salvo.campos_editados || {};
+      Object.assign(r, r.__camposEditados);
     });
 
     renderRec();
