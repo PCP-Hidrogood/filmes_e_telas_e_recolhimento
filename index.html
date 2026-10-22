@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- HIDROGOOD_SUPABASE_V11_INCREMENTAL_MERGE_2026-10-22 -->
+<!-- HIDROGOOD_SUPABASE_V12_FILTER_VALID_CATEGORIES_2026-10-22 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1567,7 +1567,12 @@ async function carregarBasePrincipalSupabase() {
 
     /* Consolida registros antigos/duplicados. TRUE nunca é perdido. */
     itensBrutos.forEach(item => {
-      if (!item.origem) return;
+      /* O banco contém lotes legados de outras origens. A interface só deve
+         exibir RECOLHIMENTO e descrições FILME/TELA/RAFIA. */
+      const matchesValidos = matchFT(item.descricao_item);
+      const valido = item.origem === 'RECOLHIMENTO' ||
+        (item.origem === 'FILME_TELA' && matchesValidos.length > 0);
+      if (!valido) return;
       const id = identidade(item);
       const anterior = mestres.get(id);
       if (!anterior) {
@@ -1612,9 +1617,10 @@ async function carregarBasePrincipalSupabase() {
       if (isRec) {
         obj.__id = 'rec-db-' + index;
         dadosRec.push(obj);
-      } else {
-        obj.__categoria = texto(item.categoria);
-        obj.__matches = obj.__categoria ? [obj.__categoria] : [];
+      } else if (item.origem === 'FILME_TELA') {
+        const matches = matchFT(item.descricao_item);
+        obj.__categoria = texto(item.categoria) || matches[0] || '';
+        obj.__matches = matches;
         obj.__id = 'ft-db-' + index;
         dadosFT.push(obj);
       }
